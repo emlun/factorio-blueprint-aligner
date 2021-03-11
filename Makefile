@@ -13,5 +13,5 @@ $(DIST_DIR):
 	mkdir -p "$(DIST_DIR)"
 
 $(DIST_FILE): $(DIST_DIR) $(shell find src)
-	cp -r src "dist/$(DIST_BASENAME)"
+	rsync -avP --delete src/ "dist/$(DIST_BASENAME)/"
 	cd dist && zip -r -FS $@ "$(DIST_BASENAME)"
