@@ -103,8 +103,6 @@ script.on_event(
       local sx = blueprint.blueprint_snap_to_grid.x
       local sy = blueprint.blueprint_snap_to_grid.y
 
-      log.debug(event.player_index, string.format("entities: %s", sutil.dumps(blueprint.get_blueprint_entities())))
-
       xmin, ymin, w, h = compute_blueprint_dimensions(blueprint)
       log.debug(event.player_index, string.format("dim: (%s, %s) %sx%s", xmin, ymin, w, h))
 
