@@ -5,6 +5,7 @@ local sutil = require("util.string")
 local aligning_blueprint = false
 local original_absolute_snapping = false
 local original_position_relative_to_grid = nil
+local original_restored = false
 
 function round(x)
   local hi = math.ceil(x)
@@ -72,6 +73,7 @@ script.on_event(
       if blueprint.blueprint_snap_to_grid then
         log.info(event.player_index, {"blueprint-align.msg_begin"})
 
+        original_restored = false
         original_absolute_snapping = blueprint.blueprint_absolute_snapping
         original_position_relative_to_grid = blueprint.blueprint_position_relative_to_grid
 
@@ -137,6 +139,7 @@ script.on_event(
 
       blueprint.blueprint_absolute_snapping = original_absolute_snapping
       blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid
+      original_restored = true
     end
   end
 )
@@ -145,8 +148,19 @@ script.on_event(
   defines.events.on_player_cursor_stack_changed,
   function(event)
     if aligning_blueprint then
-      log.info(event.player_index, {"blueprint-align.msg_abort"})
+      log.debug(event.player_index, "Blueprint alignment aborted.")
+
       aligning_blueprint = false
+
+      if (not original_restored) and original_position_relative_to_grid then
+        log.error(
+          event.player_index, {
+            "blueprint-align.msg_abort_without_restore",
+            original_position_relative_to_grid.x,
+            original_position_relative_to_grid.y
+        })
+      end
+
       original_absolute_snapping = false
       original_position_relative_to_grid = nil
     end
