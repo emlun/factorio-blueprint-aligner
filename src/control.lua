@@ -3,6 +3,8 @@ local log = require("log")
 local sutil = require("util.string")
 
 local aligning_blueprint = false
+local original_absolute_snapping = false
+local original_position_relative_to_grid = nil
 
 function round(x)
   local hi = math.ceil(x)
@@ -55,6 +57,8 @@ script.on_event(
     if aligning_blueprint then
       log.info(event.player_index, {"blueprint-align.msg_abort"})
       aligning_blueprint = false
+      original_absolute_snapping = false
+      original_position_relative_to_grid = nil
     end
   end
 )
@@ -117,11 +121,34 @@ script.on_event(
       if blueprint.blueprint_snap_to_grid then
         log.info(event.player_index, {"blueprint-align.msg_begin"})
 
+        original_absolute_snapping = blueprint.blueprint_absolute_snapping
+        original_position_relative_to_grid = blueprint.blueprint_position_relative_to_grid
+
         blueprint.blueprint_absolute_snapping = false
         aligning_blueprint = true
       else
         log.error(event.player_index, {"blueprint-align.msg_no_grid"})
       end
+    end
+  end
+)
+
+script.on_event(
+  modDefines.prefix("clear-cursor"),
+  function(event)
+    local player = game.get_player(event.player_index)
+    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
+
+    if aligning_blueprint then
+      local blueprint = player.cursor_stack
+
+      log.debug(event.player_index,
+                string.format("Restoring original settings: absolute %s, offset %s",
+                              original_absolute_snapping,
+                              sutil.dumps(original_position_relative_to_grid)))
+
+      blueprint.blueprint_absolute_snapping = original_absolute_snapping
+      blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid
     end
   end
 )
