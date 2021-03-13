@@ -20,9 +20,9 @@ Caveats
 ---
 
 - The "Align blueprint" action will initially set the blueprint to relative grid alignment.
-  If you cancel the alignment by clearing the cursor, the previous grid offset will not be restored.
+  If you cancel the alignment by some method other than using the "clear cursor" keyboard shortcut,
+  the previous grid offset will not be restored.
 
 - Currently only works with blueprints from inventory, not from the library.
-  I'm not entirely sure why that difference is.
 
 - The blueprint must already have a grid size set.
