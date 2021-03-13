@@ -97,20 +97,65 @@ script.on_event(
       local player = game.get_player(event.player_index)
       local blueprint = player.cursor_stack
 
-      local bx = round(event.position.x)
-      local by = round(event.position.y)
+      local ex = round(event.position.x)
+      local ey = round(event.position.y)
 
-      local sx = blueprint.blueprint_snap_to_grid.x;
-      local sy = blueprint.blueprint_snap_to_grid.y;
+      local sx = blueprint.blueprint_snap_to_grid.x
+      local sy = blueprint.blueprint_snap_to_grid.y
 
       log.debug(event.player_index, string.format("entities: %s", sutil.dumps(blueprint.get_blueprint_entities())))
 
       xmin, ymin, w, h = compute_blueprint_dimensions(blueprint)
       log.debug(event.player_index, string.format("dim: (%s, %s) %sx%s", xmin, ymin, w, h))
 
-      bx = (bx % sx) - math.ceil(w / 2) - xmin
-      by = (by % sy) - math.ceil(h / 2) - ymin
+      local bx = 0
+      local by = 0
 
+      local center_x = math.ceil(w / 2) + xmin
+      local center_y = math.ceil(h / 2) + ymin
+
+      if event.direction == 0 then
+        bx = (ex % sx) - center_x
+        by = (ey % sy) - center_y
+
+      elseif event.direction == 2 then
+        local topright_x = (ex % sy) + center_y
+        local topright_y = (ey % sx) - center_x
+        bx = topright_x - sy
+        by = topright_y
+
+      elseif event.direction == 4 then
+        local btmright_x = (ex % sx) + center_x
+        local btmright_y = (ey % sy) + center_y
+        bx = btmright_x - sx
+        by = btmright_y - sy
+
+      elseif event.direction == 6 then
+        local btmleft_x = (ex % sy) - center_y
+        local btmleft_y = (ey % sx) + center_x
+        bx = btmleft_x
+        by = btmleft_y - sx
+
+      end
+
+      if event.flip_horizontal then
+        if event.direction == 0 or event.direction == 4 then
+          bx = bx - sx + 2 * ((ex - bx) % sx)
+        else
+          by = by - sx + 2 * ((ey - by) % sx)
+        end
+      end
+      if event.flip_vertical then
+        if event.direction == 0 or event.direction == 4 then
+          by = by - sy + 2 * ((ey - by) % sy)
+        else
+          bx = bx - sy + 2 * ((ex - bx) % sy)
+        end
+      end
+
+      log.debug(event.player_index, string.format("ex %d, ey %d", ex, ey))
+      log.debug(event.player_index, string.format("cx %d, cy %d", center_x, center_y))
+      log.debug(event.player_index, string.format("sx %d, sy %d", sx, sy))
       log.debug(event.player_index, string.format("bx %d, by %d", bx, by))
       log.debug(event.player_index, string.format("blueprint: %s", sutil.dumps(blueprint)))
 
