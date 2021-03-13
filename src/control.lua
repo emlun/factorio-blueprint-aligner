@@ -78,9 +78,6 @@ script.on_event(
 
       log.debug(event.player_index, string.format("entities: %s", sutil.dumps(blueprint.get_blueprint_entities())))
 
-
-      log.debug(event.player_index, string.format("x_min: %s, x_max: %s, y_min: %s, y_max: %s", x_min, x_max, y_min, y_max))
-
       w, h = compute_blueprint_size(blueprint)
 
       bx = (bx % sx) - math.ceil(w / 2)
