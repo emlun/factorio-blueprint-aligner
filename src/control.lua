@@ -14,7 +14,7 @@ function round(x)
   end
 end
 
-function compute_blueprint_size(blueprint)
+function compute_blueprint_dimensions(blueprint)
   local x_min = nil
   local x_max = nil
   local y_min = nil
@@ -46,7 +46,7 @@ function compute_blueprint_size(blueprint)
     y_max = math.max(y_hi, y_max or y_hi)
   end
 
-  return x_max - x_min, y_max - y_min
+  return x_min, y_min, x_max - x_min, y_max - y_min
 end
 
 script.on_event(
@@ -78,13 +78,13 @@ script.on_event(
 
       log.debug(event.player_index, string.format("entities: %s", sutil.dumps(blueprint.get_blueprint_entities())))
 
-      w, h = compute_blueprint_size(blueprint)
+      xmin, ymin, w, h = compute_blueprint_dimensions(blueprint)
+      log.debug(event.player_index, string.format("dim: (%s, %s) %sx%s", xmin, ymin, w, h))
 
-      bx = (bx % sx) - math.ceil(w / 2)
-      by = (by % sy) - math.ceil(h / 2)
+      bx = (bx % sx) - math.ceil(w / 2) - xmin
+      by = (by % sy) - math.ceil(h / 2) - ymin
 
       log.debug(event.player_index, string.format("bx %d, by %d", bx, by))
-      log.debug(event.player_index, string.format("w %d, h %d", w, h))
       log.debug(event.player_index, string.format("blueprint: %s", sutil.dumps(blueprint)))
 
       blueprint.blueprint_absolute_snapping = true
