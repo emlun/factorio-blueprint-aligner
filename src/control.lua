@@ -97,14 +97,19 @@ script.on_event(
       local player = game.get_player(event.player_index)
       local blueprint = player.cursor_stack
 
-      local ex = round(event.position.x)
-      local ey = round(event.position.y)
+      xmin, ymin, w, h = compute_blueprint_dimensions(blueprint)
+      log.debug(event.player_index, string.format("dim: (%s, %s) %sx%s", xmin, ymin, w, h))
+
+      -- Building placement snaps to tile edge or tile center
+      -- depending on if the size in the respective dimension is even or odd
+      local snapping_x = w % 2 == 0 and round or math.ceil
+      local snapping_y = h % 2 == 0 and round or math.ceil
+
+      local ex = snapping_x(event.position.x)
+      local ey = snapping_y(event.position.y)
 
       local sx = blueprint.blueprint_snap_to_grid.x
       local sy = blueprint.blueprint_snap_to_grid.y
-
-      xmin, ymin, w, h = compute_blueprint_dimensions(blueprint)
-      log.debug(event.player_index, string.format("dim: (%s, %s) %sx%s", xmin, ymin, w, h))
 
       local bx = 0
       local by = 0
