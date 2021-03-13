@@ -23,7 +23,7 @@ function compute_blueprint_dimensions(blueprint)
   local y_min = nil
   local y_max = nil
 
-  for _, ent in pairs(blueprint.get_blueprint_entities()) do
+  for _, ent in pairs(blueprint.get_blueprint_entities() or {}) do
     local prots = game.get_filtered_entity_prototypes{{ filter = "name", name = ent.name }}
 
     local x_lo = math.floor(ent.position.x + prots[ent.name].selection_box.left_top.x)
@@ -37,7 +37,7 @@ function compute_blueprint_dimensions(blueprint)
     y_max = math.max(y_hi, y_max or y_hi)
   end
 
-  for _, ent in pairs(blueprint.get_blueprint_tiles()) do
+  for _, ent in pairs(blueprint.get_blueprint_tiles() or {}) do
     local x_lo = ent.position.x
     local x_hi = ent.position.x + 1
     local y_lo = ent.position.y
