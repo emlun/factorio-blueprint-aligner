@@ -116,14 +116,12 @@ script.on_event(
 
       if blueprint.blueprint_snap_to_grid then
         log.info(event.player_index, {"blueprint-align.msg_begin"})
+
         blueprint.blueprint_absolute_snapping = false
         aligning_blueprint = true
-        return
       else
         log.error(event.player_index, {"blueprint-align.msg_no_grid"})
-        return
       end
-
     end
   end
 )
