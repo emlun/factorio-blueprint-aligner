@@ -4,7 +4,13 @@ Factorio blueprint aligner mod
 This is a small mod intended to help set the grid offset
 for blueprints with absolute grid alignment.
 
-To use it:
+![Mod thumbnail](./src/thumbnail.png)
+
+Mod portal: https://mods.factorio.com/mod/blueprint-align
+
+
+Usage
+---
 
  1. Open the shortcut toolbar menu. There will be a new "Align blueprint" option there.
  2. Either add this shortcut to the toolbar and then click it while holding a blueprint,
