@@ -52,13 +52,34 @@ function compute_blueprint_dimensions(blueprint)
 end
 
 script.on_event(
-  defines.events.on_player_cursor_stack_changed,
+  defines.events.on_lua_shortcut,
   function(event)
-    if aligning_blueprint then
-      log.info(event.player_index, {"blueprint-align.msg_abort"})
-      aligning_blueprint = false
-      original_absolute_snapping = false
-      original_position_relative_to_grid = nil
+    local player = game.get_player(event.player_index)
+    log.debug(event.player_index, string.format("on_lua_shortcut : %s", sutil.dumps(event)))
+
+    if event.prototype_name == modDefines.shortcutPrototypeName then
+      if not (player.is_cursor_blueprint() and player.cursor_stack and player.cursor_stack.valid_for_read) then
+        log.error(event.player_index, {"blueprint-align.msg_bad_cursor"})
+        return
+      end
+
+      log.debug(event.player_index, string.format("snap : %s", sutil.dumps(player.cursor_stack.blueprint_snap_to_grid)))
+      log.debug(event.player_index, string.format("pos : %s", sutil.dumps(player.cursor_stack.blueprint_position_relative_to_grid)))
+      log.debug(event.player_index, string.format("absolute : %s", sutil.dumps(player.cursor_stack.blueprint_absolute_snapping)))
+
+      local blueprint = player.cursor_stack
+
+      if blueprint.blueprint_snap_to_grid then
+        log.info(event.player_index, {"blueprint-align.msg_begin"})
+
+        original_absolute_snapping = blueprint.blueprint_absolute_snapping
+        original_position_relative_to_grid = blueprint.blueprint_position_relative_to_grid
+
+        blueprint.blueprint_absolute_snapping = false
+        aligning_blueprint = true
+      else
+        log.error(event.player_index, {"blueprint-align.msg_no_grid"})
+      end
     end
   end
 )
@@ -101,39 +122,6 @@ script.on_event(
 )
 
 script.on_event(
-  defines.events.on_lua_shortcut,
-  function(event)
-    local player = game.get_player(event.player_index)
-    log.debug(event.player_index, string.format("on_lua_shortcut : %s", sutil.dumps(event)))
-
-    if event.prototype_name == modDefines.shortcutPrototypeName then
-      if not (player.is_cursor_blueprint() and player.cursor_stack and player.cursor_stack.valid_for_read) then
-        log.error(event.player_index, {"blueprint-align.msg_bad_cursor"})
-        return
-      end
-
-      log.debug(event.player_index, string.format("snap : %s", sutil.dumps(player.cursor_stack.blueprint_snap_to_grid)))
-      log.debug(event.player_index, string.format("pos : %s", sutil.dumps(player.cursor_stack.blueprint_position_relative_to_grid)))
-      log.debug(event.player_index, string.format("absolute : %s", sutil.dumps(player.cursor_stack.blueprint_absolute_snapping)))
-
-      local blueprint = player.cursor_stack
-
-      if blueprint.blueprint_snap_to_grid then
-        log.info(event.player_index, {"blueprint-align.msg_begin"})
-
-        original_absolute_snapping = blueprint.blueprint_absolute_snapping
-        original_position_relative_to_grid = blueprint.blueprint_position_relative_to_grid
-
-        blueprint.blueprint_absolute_snapping = false
-        aligning_blueprint = true
-      else
-        log.error(event.player_index, {"blueprint-align.msg_no_grid"})
-      end
-    end
-  end
-)
-
-script.on_event(
   modDefines.prefix("clear-cursor"),
   function(event)
     local player = game.get_player(event.player_index)
@@ -149,6 +137,18 @@ script.on_event(
 
       blueprint.blueprint_absolute_snapping = original_absolute_snapping
       blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid
+    end
+  end
+)
+
+script.on_event(
+  defines.events.on_player_cursor_stack_changed,
+  function(event)
+    if aligning_blueprint then
+      log.info(event.player_index, {"blueprint-align.msg_abort"})
+      aligning_blueprint = false
+      original_absolute_snapping = false
+      original_position_relative_to_grid = nil
     end
   end
 )
