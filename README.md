@@ -25,11 +25,4 @@ Caveats
 - Currently only works with blueprints from inventory, not from the library.
   I'm not entirely sure why that difference is.
 
-- Currently works only if the blueprint has the alignment grid
-  (the setting labeled "Grid position" in the blueprint GUI)
-  at offset (0, 0).
-  It seems like the mod API doesn't make this setting readable,
-  so the mod cannot compensate for it when setting the grid offset.
-  I would love to be proven wrong about this.
-
 - The blueprint must already have a grid size set.
