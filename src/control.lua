@@ -113,9 +113,9 @@ function round_or(x, do_other, other)
   end
 end
 
-function snap_center(xmin, ymin, w, h, direction, rails)
-  local cx = w / 2 + xmin
-  local cy = h / 2 + ymin
+function snap_center(x_min, y_min, w, h, direction, rails)
+  local cx = w / 2 + x_min
+  local cy = h / 2 + y_min
 
   local horz_size, vert_size = rotate_size(w, h, direction)
   local horz_odd = horz_size % 2 == 1
@@ -200,14 +200,14 @@ script.on_event(
       local rails = contains_rails(blueprint)
       local flipdim = event.direction == 0 or event.direction == 4
 
-      xmin, ymin, w, h = compute_blueprint_dimensions(blueprint)
-      log.debug(event.player_index, string.format("dim: (%s, %s) %sx%s", xmin, ymin, w, h))
+      local x_min, y_min, w, h = compute_blueprint_dimensions(blueprint)
+      log.debug(event.player_index, string.format("dim: (%s, %s) %sx%s", x_min, y_min, w, h))
 
       -- Building placement snaps to tile edge or tile center
       -- depending on if the size in the respective dimension is even or odd,
       -- and to even or odd tiles depending on if the blueprint contains rails
-      local snapping_x = get_pointer_snapping_mode(flipdim and w or h, flipdim and xmin or ymin, rails)
-      local snapping_y = get_pointer_snapping_mode(flipdim and h or w, flipdim and ymin or xmin, rails)
+      local snapping_x = get_pointer_snapping_mode(flipdim and w or h, flipdim and x_min or y_min, rails)
+      local snapping_y = get_pointer_snapping_mode(flipdim and h or w, flipdim and y_min or x_min, rails)
 
       local ex = snapping_x(event.position.x)
       local ey = snapping_y(event.position.y)
@@ -218,7 +218,7 @@ script.on_event(
       local bx = 0
       local by = 0
 
-      local center_x, center_y = snap_center(xmin, ymin, w, h, event.direction, rails)
+      local center_x, center_y = snap_center(x_min, y_min, w, h, event.direction, rails)
 
       if event.direction == 0 then
         bx = (ex % sx) - center_x
