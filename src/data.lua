@@ -3,7 +3,7 @@ local mod_defines = require("mod_defines")
 local blueprint_align_shortcut_input = {
   type = "custom-input",
   name = mod_defines.input.shortcut,
-  key_sequence = "",
+  key_sequence = "CONTROL + SHIFT + B",
 }
 
 local blueprint_align_shortcut = {
