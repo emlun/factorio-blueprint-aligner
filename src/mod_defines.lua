@@ -8,11 +8,11 @@ return {
   },
   input = {
     shortcut = prefix("shortcut__align-blueprint-input"),
-    clearCursor = prefix("clear-cursor"),
+    clear_cursor = prefix("clear-cursor"),
   },
   setting = {
-    logDebug = prefix("log-debug"),
-    logInfo = prefix("log-info"),
-    logError = prefix("log-error"),
+    log_debug = prefix("log-debug"),
+    log_info = prefix("log-info"),
+    log_error = prefix("log-error"),
   },
 }

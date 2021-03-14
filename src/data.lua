@@ -1,28 +1,28 @@
-local modDefines = require("mod_defines")
+local mod_defines = require("mod_defines")
 
-local blueprintAlignShortcut = {
+local blueprint_align_shortcut = {
   type = "shortcut",
-  name = modDefines.prototype.shortcut,
-  associated_control_input = modDefines.input.shortcut,
+  name = mod_defines.prototype.shortcut,
+  associated_control_input = mod_defines.input.shortcut,
   action = "lua",
   icon = data.raw["shortcut"]["give-blueprint"]["icon"],
 }
 
-local blueprintAlignShortcutInput = {
+local blueprint_align_shortcut_input = {
   type = "custom-input",
-  name = modDefines.input.shortcut,
+  name = mod_defines.input.shortcut,
   key_sequence = "",
 }
 
-local clearCursorInput = {
+local clear_cursor_input = {
   type = "custom-input",
-  name = modDefines.input.clearCursor,
+  name = mod_defines.input.clear_cursor,
   key_sequence = "",
   linked_game_control = "clear-cursor",
 }
 
 data:extend{
-  blueprintAlignShortcut,
-  blueprintAlignShortcutInput,
-  clearCursorInput,
+  blueprint_align_shortcut,
+  blueprint_align_shortcut_input,
+  clear_cursor_input,
 }
