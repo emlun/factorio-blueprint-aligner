@@ -173,14 +173,14 @@ script.on_event(
   defines.events.on_lua_shortcut,
   function(event)
     log.debug(event.player_index, string.format("on_lua_shortcut : %s", sutil.dumps(event)))
-    if event.prototype_name == mod_defines.prototype.shortcut then
+    if event.prototype_name == mod_defines.prototype.shortcut.align_absolute then
       begin_blueprint_alignment(event)
     end
   end
 )
 
 script.on_event(
-  mod_defines.input.shortcut,
+  mod_defines.input.align_absolute,
   function(event)
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
     begin_blueprint_alignment(event)

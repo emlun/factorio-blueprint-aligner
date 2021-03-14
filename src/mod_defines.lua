@@ -4,10 +4,12 @@ end
 
 return {
   prototype = {
-    shortcut = prefix("shortcut__align-blueprint"),
+    shortcut = {
+      align_absolute = prefix("shortcut__align-blueprint-absolute"),
+    },
   },
   input = {
-    shortcut = prefix("shortcut__align-blueprint-input"),
+    align_absolute = prefix("input__align-blueprint-absolute"),
     clear_cursor = prefix("clear-cursor"),
   },
   setting = {
