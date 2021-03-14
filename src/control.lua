@@ -79,7 +79,9 @@ end
 
 function get_pointer_snapping_mode(size, min, rails)
   if rails then
-    if size % 4 == 3 then
+    if size % 4 == 0 then
+      return round2
+    elseif size % 4 == 3 then
       return floor2_odd
     elseif min % 2 == 1 then
       return round2
