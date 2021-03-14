@@ -21,6 +21,8 @@ Usage
 The mod will by default print interaction feedback to the console to guide new users.
 This can be turned off in the mod settings.
 
+The blueprint alignment shortcut has an optional control input which is not set by default.
+
 
 Caveats
 ---
