@@ -5,7 +5,7 @@
   "author": "emlun",
   "factorio_version": "1.1",
   "dependencies": [],
-  "description": "Adds a toolbar button that sets blueprint offset by placing the blueprint in the world.",
+  "description": "Set blueprint grid offsets by placing the blueprint in the world.",
   "homepage": "https://github.com/emlun/factorio-blueprint-aligner",
   "contact": "emil@emlun.se"
 }
