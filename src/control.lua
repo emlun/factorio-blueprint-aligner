@@ -1,5 +1,7 @@
-local mod_defines = require("mod_defines")
+local butil = require("util.blueprint")
 local log = require("log")
+local mod_defines = require("mod_defines")
+local mutil = require("util.math")
 local sutil = require("util.string")
 
 local aligning_blueprint = false
@@ -7,75 +9,12 @@ local original_absolute_snapping = false
 local original_position_relative_to_grid = nil
 local original_restored = false
 
-function round(x)
-  local hi = math.ceil(x)
-  local lo = math.floor(x)
-  if hi - x <= x - lo then
-    return hi
-  else
-    return lo
-  end
-end
+local ceil2 = mutil.ceil2
+local floor2 = mutil.floor2
+local floor2_odd = mutil.floor2_odd
+local round = mutil.round
+local round2 = mutil.round2
 
-function round2(x)
-  return 2 * round(x / 2)
-end
-
-function floor2(x)
-  return 2 * math.floor(x / 2)
-end
-
-function floor2_odd(x)
-  return 2 * math.floor((x + 1) / 2) - 1
-end
-
-function ceil2(x)
-  return 2 * math.ceil(x / 2)
-end
-
-function compute_blueprint_dimensions(blueprint)
-  local x_min = nil
-  local x_max = nil
-  local y_min = nil
-  local y_max = nil
-
-  for _, ent in pairs(blueprint.get_blueprint_entities() or {}) do
-    local prots = game.get_filtered_entity_prototypes{{ filter = "name", name = ent.name }}
-
-    local x_lo = ent.position.x + prots[ent.name].selection_box.left_top.x
-    local x_hi = ent.position.x + prots[ent.name].selection_box.right_bottom.x
-    local y_lo = ent.position.y + prots[ent.name].selection_box.left_top.y
-    local y_hi = ent.position.y + prots[ent.name].selection_box.right_bottom.y
-
-    x_min = math.min(x_lo, x_min or x_lo)
-    x_max = math.max(x_hi, x_max or x_hi)
-    y_min = math.min(y_lo, y_min or y_lo)
-    y_max = math.max(y_hi, y_max or y_hi)
-  end
-
-  for _, ent in pairs(blueprint.get_blueprint_tiles() or {}) do
-    local x_lo = ent.position.x
-    local x_hi = ent.position.x + 1
-    local y_lo = ent.position.y
-    local y_hi = ent.position.y + 1
-
-    x_min = math.min(x_lo, x_min or x_lo)
-    x_max = math.max(x_hi, x_max or x_hi)
-    y_min = math.min(y_lo, y_min or y_lo)
-    y_max = math.max(y_hi, y_max or y_hi)
-  end
-
-  return math.floor(x_min), math.floor(y_min), math.ceil(x_max - x_min), math.ceil(y_max - y_min)
-end
-
-function contains_rails(blueprint)
-  for _, ent in pairs(blueprint.get_blueprint_entities() or {}) do
-    if ent.name == "straight-rail" or ent.name == "curved-rail" or ent.name == "train-stop" then
-      return true
-    end
-  end
-  return false
-end
 
 function get_pointer_snapping_mode(size, min, rails)
   if rails then
@@ -197,10 +136,10 @@ script.on_event(
 
       local player = game.get_player(event.player_index)
       local blueprint = player.cursor_stack
-      local rails = contains_rails(blueprint)
+      local rails = butil.contains_rails(blueprint)
       local flipdim = event.direction == 0 or event.direction == 4
 
-      local x_min, y_min, w, h = compute_blueprint_dimensions(blueprint)
+      local x_min, y_min, w, h = butil.dimensions(blueprint)
       log.debug(event.player_index, string.format("dim: (%s, %s) %sx%s", x_min, y_min, w, h))
 
       -- Building placement snaps to tile edge or tile center
