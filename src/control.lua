@@ -5,6 +5,7 @@ local mutil = require("util.math")
 local sutil = require("util.string")
 
 local aligning_blueprint = false
+local align_relative = nil
 local original_absolute_snapping = false
 local original_position_relative_to_grid = nil
 local original_restored = false
@@ -15,6 +16,26 @@ local floor2_odd = mutil.floor2_odd
 local round = mutil.round
 local round2 = mutil.round2
 
+
+function translate_blueprint(dx, dy, blueprint)
+  local entities = blueprint.get_blueprint_entities()
+  if entities ~= nil then
+    for _, ent in pairs(entities) do
+      ent.position.x = ent.position.x + dx
+      ent.position.y = ent.position.y + dy
+    end
+    blueprint.set_blueprint_entities(entities)
+  end
+
+  local tiles = blueprint.get_blueprint_tiles()
+  if tiles ~= nil then
+    for _, tile in pairs(tiles) do
+      tile.position.x = tile.position.x + dx
+      tile.position.y = tile.position.y + dy
+    end
+    blueprint.set_blueprint_tiles(tiles)
+  end
+end
 
 function get_pointer_snapping_mode(size, min, rails)
   if rails then
@@ -80,7 +101,7 @@ function rail_snap(x, rails)
   return x
 end
 
-function begin_blueprint_alignment(event)
+function begin_blueprint_alignment(event, relative)
   local player = game.get_player(event.player_index)
 
   if not (player.is_cursor_blueprint() and player.cursor_stack and player.cursor_stack.valid_for_read) then
@@ -95,7 +116,11 @@ function begin_blueprint_alignment(event)
   local blueprint = player.cursor_stack
 
   if blueprint.blueprint_snap_to_grid then
-    log.info(event.player_index, {"blueprint-align.msg_begin"})
+    if relative then
+      log.info(event.player_index, {"blueprint-align.msg_begin_relative"})
+    else
+      log.info(event.player_index, {"blueprint-align.msg_begin_absolute"})
+    end
 
     original_restored = false
     original_absolute_snapping = blueprint.blueprint_absolute_snapping
@@ -103,6 +128,7 @@ function begin_blueprint_alignment(event)
 
     blueprint.blueprint_absolute_snapping = false
     aligning_blueprint = true
+    align_relative = relative
   else
     log.error(event.player_index, {"blueprint-align.msg_no_grid"})
   end
@@ -113,7 +139,9 @@ script.on_event(
   function(event)
     log.debug(event.player_index, string.format("on_lua_shortcut : %s", sutil.dumps(event)))
     if event.prototype_name == mod_defines.prototype.shortcut.align_absolute then
-      begin_blueprint_alignment(event)
+      begin_blueprint_alignment(event, false)
+    elseif event.prototype_name == mod_defines.prototype.shortcut.align_relative then
+      begin_blueprint_alignment(event, true)
     end
   end
 )
@@ -122,7 +150,15 @@ script.on_event(
   mod_defines.input.align_absolute,
   function(event)
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
-    begin_blueprint_alignment(event)
+    begin_blueprint_alignment(event, false)
+  end
+)
+
+script.on_event(
+  mod_defines.input.align_relative,
+  function(event)
+    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
+    begin_blueprint_alignment(event, true)
   end
 )
 
@@ -206,10 +242,33 @@ script.on_event(
       log.debug(event.player_index, string.format("sx %d, sy %d", sx, sy))
       log.debug(event.player_index, string.format("bx %d, by %d", bx, by))
       log.debug(event.player_index, string.format("rbx %d, rby %d", rbx, rby))
-      log.debug(event.player_index, string.format("blueprint: %s", sutil.dumps(blueprint)))
 
       blueprint.blueprint_absolute_snapping = true
-      blueprint.blueprint_position_relative_to_grid = { x = rbx, y = rby }
+      if align_relative then
+        blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid
+
+        local click_x_in_grid, click_y_in_grid = butil.world_to_blueprint_frame(
+          event.position.x,
+          event.position.y,
+          event.direction,
+          event.flip_horizontal,
+          event.flip_vertical,
+          blueprint
+        )
+        local center_x, center_y = butil.center(blueprint)
+
+        local dx, dy = round2(click_x_in_grid - center_x), round2(click_y_in_grid - center_y)
+
+        log.debug(event.player_index, string.format("grid pos: %s", sutil.dumps(blueprint.blueprint_position_relative_to_grid)))
+        log.debug(event.player_index, string.format("click pos: (%s, %s)", event.position.x, event.position.y))
+        log.debug(event.player_index, string.format("click pos in grid: (%s, %s)", click_x_in_grid, click_y_in_grid))
+        log.debug(event.player_index, string.format("blueprint center: (%s, %s)", center_x, center_y))
+        log.debug(event.player_index, string.format("dxy: (%s, %s)", dx, dy))
+
+        translate_blueprint(dx, dy, blueprint)
+      else
+        blueprint.blueprint_position_relative_to_grid = { x = rbx, y = rby }
+      end
 
       aligning_blueprint = false
       log.info(event.player_index, {"blueprint-align.msg_finished"})

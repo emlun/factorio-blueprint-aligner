@@ -6,10 +6,12 @@ return {
   prototype = {
     shortcut = {
       align_absolute = prefix("shortcut__align-blueprint-absolute"),
+      align_relative = prefix("shortcut__align-blueprint-relative"),
     },
   },
   input = {
     align_absolute = prefix("input__align-blueprint-absolute"),
+    align_relative = prefix("input__align-blueprint-relative"),
     clear_cursor = prefix("clear-cursor"),
   },
   setting = {
