@@ -3,10 +3,16 @@ function prefix(s)
 end
 
 return {
-  shortcutPrototypeName = prefix("shortcut__align-blueprint"),
-  shortcutInput = prefix("shortcut__align-blueprint-input"),
-  clearCursorInput = prefix("clear-cursor"),
-  logDebugSetting = prefix("log-debug"),
-  logInfoSetting = prefix("log-info"),
-  logErrorSetting = prefix("log-error"),
+  prototype = {
+    shortcut = prefix("shortcut__align-blueprint"),
+  },
+  input = {
+    shortcut = prefix("shortcut__align-blueprint-input"),
+    clearCursor = prefix("clear-cursor"),
+  },
+  setting = {
+    logDebug = prefix("log-debug"),
+    logInfo = prefix("log-info"),
+    logError = prefix("log-error"),
+  },
 }

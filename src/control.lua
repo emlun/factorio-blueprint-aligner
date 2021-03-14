@@ -171,14 +171,14 @@ script.on_event(
   defines.events.on_lua_shortcut,
   function(event)
     log.debug(event.player_index, string.format("on_lua_shortcut : %s", sutil.dumps(event)))
-    if event.prototype_name == modDefines.shortcutPrototypeName then
+    if event.prototype_name == modDefines.prototype.shortcut then
       begin_blueprint_alignment(event)
     end
   end
 )
 
 script.on_event(
-  modDefines.shortcutInput,
+  modDefines.input.shortcut,
   function(event)
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
     begin_blueprint_alignment(event)
@@ -277,7 +277,7 @@ script.on_event(
 )
 
 script.on_event(
-  modDefines.clearCursorInput,
+  modDefines.input.clearCursor,
   function(event)
     local player = game.get_player(event.player_index)
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
