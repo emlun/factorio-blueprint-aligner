@@ -277,7 +277,7 @@ script.on_event(
 )
 
 script.on_event(
-  modDefines.prefix("clear-cursor"),
+  modDefines.clearCursorInput,
   function(event)
     local player = game.get_player(event.player_index)
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))

@@ -16,7 +16,7 @@ local blueprintAlignShortcutInput = {
 
 local clearCursorInput = {
   type = "custom-input",
-  name = modDefines.prefix("clear-cursor"),
+  name = modDefines.clearCursorInput,
   key_sequence = "",
   linked_game_control = "clear-cursor",
 }
