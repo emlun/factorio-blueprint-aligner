@@ -10,12 +10,6 @@ local original_absolute_snapping = false
 local original_position_relative_to_grid = nil
 local original_restored = false
 
-local ceil2 = mutil.ceil2
-local floor2 = mutil.floor2
-local floor2_odd = mutil.floor2_odd
-local round = mutil.round
-local round2 = mutil.round2
-
 
 function translate_blueprint(dx, dy, blueprint)
   local entities = blueprint.get_blueprint_entities()
@@ -35,70 +29,6 @@ function translate_blueprint(dx, dy, blueprint)
     end
     blueprint.set_blueprint_tiles(tiles)
   end
-end
-
-function get_pointer_snapping_mode(size, min, rails)
-  if rails then
-    if size % 4 == 0 then
-      return round2
-    elseif size % 4 == 3 then
-      return floor2_odd
-    elseif min % 2 == 1 then
-      return round2
-    else
-      return floor2
-    end
-  end
-
-  if size % 2 == 1 then
-    return math.floor
-  else
-    return round
-  end
-end
-
-function rotate_size(w, h, direction)
-  if direction == 0 or direction == 4 then
-    return w, h
-  else
-    return h, w
-  end
-end
-
-function round_or(x, do_other, other)
-  if do_other then
-    return other(x)
-  else
-    return round(x)
-  end
-end
-
-function snap_center(x_min, y_min, w, h, direction, rails)
-  local cx = w / 2 + x_min
-  local cy = h / 2 + y_min
-
-  local horz_size, vert_size = rotate_size(w, h, direction)
-  local horz_odd = horz_size % 2 == 1
-  local vert_odd = vert_size % 2 == 1
-
-  if direction == 0 then
-    return round_or(cx, horz_odd, math.floor), round_or(cy, vert_odd, math.floor)
-  elseif direction == 2 then
-    return round_or(cx, horz_odd, math.floor), round_or(cy, vert_odd, math.ceil)
-  elseif direction == 4 then
-    return round_or(cx, horz_odd, math.ceil), round_or(cy, vert_odd, math.ceil)
-  elseif direction == 6 then
-    return round_or(cx, horz_odd, math.ceil), round_or(cy, vert_odd, math.floor)
-  end
-  return snapped_x, snapped_y
-end
-
-function rail_snap(x, rails)
-  if rails then
-    return ceil2(x)
-  end
-
-  return x
 end
 
 function begin_blueprint_alignment(event, relative)
@@ -172,102 +102,35 @@ script.on_event(
 
       local player = game.get_player(event.player_index)
       local blueprint = player.cursor_stack
-      local rails = butil.contains_rails(blueprint)
-      local flipdim = event.direction == 0 or event.direction == 4
-
-      local x_min, y_min, w, h = butil.dimensions(blueprint)
-      log.debug(event.player_index, string.format("dim: (%s, %s) %sx%s", x_min, y_min, w, h))
-
-      -- Building placement snaps to tile edge or tile center
-      -- depending on if the size in the respective dimension is even or odd,
-      -- and to even or odd tiles depending on if the blueprint contains rails
-      local snapping_x = get_pointer_snapping_mode(flipdim and w or h, flipdim and x_min or y_min, rails)
-      local snapping_y = get_pointer_snapping_mode(flipdim and h or w, flipdim and y_min or x_min, rails)
-
-      local ex = snapping_x(event.position.x)
-      local ey = snapping_y(event.position.y)
-
-      local sx = blueprint.blueprint_snap_to_grid.x
-      local sy = blueprint.blueprint_snap_to_grid.y
-
-      local bx = 0
-      local by = 0
-
-      local center_x, center_y = snap_center(x_min, y_min, w, h, event.direction, rails)
-
-      if event.direction == 0 then
-        bx = (ex % sx) - center_x
-        by = (ey % sy) - center_y
-
-      elseif event.direction == 2 then
-        local topright_x = (ex % sy) + center_y
-        local topright_y = (ey % sx) - center_x
-        bx = topright_x - sy
-        by = topright_y
-
-      elseif event.direction == 4 then
-        local btmright_x = (ex % sx) + center_x
-        local btmright_y = (ey % sy) + center_y
-        bx = btmright_x - sx
-        by = btmright_y - sy
-
-      elseif event.direction == 6 then
-        local btmleft_x = (ex % sy) - center_y
-        local btmleft_y = (ey % sx) + center_x
-        bx = btmleft_x
-        by = btmleft_y - sx
-
-      end
-
-      if event.flip_horizontal then
-        if event.direction == 0 or event.direction == 4 then
-          bx = bx - sx + 2 * ((ex - bx) % sx)
-        else
-          by = by - sx + 2 * ((ey - by) % sx)
-        end
-      end
-      if event.flip_vertical then
-        if event.direction == 0 or event.direction == 4 then
-          by = by - sy + 2 * ((ey - by) % sy)
-        else
-          bx = bx - sy + 2 * ((ex - bx) % sy)
-        end
-      end
-
-      rbx = rail_snap(bx, rails)
-      rby = rail_snap(by, rails)
-
-      log.debug(event.player_index, string.format("ex %d, ey %d", ex, ey))
-      log.debug(event.player_index, string.format("cx %d, cy %d", center_x, center_y))
-      log.debug(event.player_index, string.format("sx %d, sy %d", sx, sy))
-      log.debug(event.player_index, string.format("bx %d, by %d", bx, by))
-      log.debug(event.player_index, string.format("rbx %d, rby %d", rbx, rby))
+      local rounding = butil.contains_rails(blueprint) and mutil.round2 or mutil.round
 
       blueprint.blueprint_absolute_snapping = true
+      blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid
+
+      local center_x, center_y = butil.center(blueprint)
+      local click_x_in_grid, click_y_in_grid = butil.world_to_blueprint_frame(
+        event.position.x,
+        event.position.y,
+        event.direction,
+        event.flip_horizontal,
+        event.flip_vertical,
+        blueprint
+      )
+      local dx, dy = rounding(click_x_in_grid - center_x), rounding(click_y_in_grid - center_y)
+
+      log.debug(event.player_index, string.format("grid pos: %s", sutil.dumps(blueprint.blueprint_position_relative_to_grid)))
+      log.debug(event.player_index, string.format("click pos: (%s, %s)", event.position.x, event.position.y))
+      log.debug(event.player_index, string.format("click pos in grid: (%s, %s)", click_x_in_grid, click_y_in_grid))
+      log.debug(event.player_index, string.format("blueprint center: (%s, %s)", center_x, center_y))
+      log.debug(event.player_index, string.format("dxy: (%s, %s)", dx, dy))
+
       if align_relative then
-        blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid
-
-        local click_x_in_grid, click_y_in_grid = butil.world_to_blueprint_frame(
-          event.position.x,
-          event.position.y,
-          event.direction,
-          event.flip_horizontal,
-          event.flip_vertical,
-          blueprint
-        )
-        local center_x, center_y = butil.center(blueprint)
-
-        local dx, dy = round2(click_x_in_grid - center_x), round2(click_y_in_grid - center_y)
-
-        log.debug(event.player_index, string.format("grid pos: %s", sutil.dumps(blueprint.blueprint_position_relative_to_grid)))
-        log.debug(event.player_index, string.format("click pos: (%s, %s)", event.position.x, event.position.y))
-        log.debug(event.player_index, string.format("click pos in grid: (%s, %s)", click_x_in_grid, click_y_in_grid))
-        log.debug(event.player_index, string.format("blueprint center: (%s, %s)", center_x, center_y))
-        log.debug(event.player_index, string.format("dxy: (%s, %s)", dx, dy))
-
         translate_blueprint(dx, dy, blueprint)
       else
-        blueprint.blueprint_position_relative_to_grid = { x = rbx, y = rby }
+        blueprint.blueprint_position_relative_to_grid = {
+          x = blueprint.blueprint_position_relative_to_grid.x + dx,
+          y = blueprint.blueprint_position_relative_to_grid.y + dy,
+        }
       end
 
       aligning_blueprint = false

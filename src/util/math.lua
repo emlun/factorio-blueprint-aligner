@@ -17,17 +17,5 @@ function module.round2(x)
   return 2 * module.round(x / 2)
 end
 
-function module.floor2(x)
-  return 2 * math.floor(x / 2)
-end
-
-function module.floor2_odd(x)
-  return 2 * math.floor((x + 1) / 2) - 1
-end
-
-function module.ceil2(x)
-  return 2 * math.ceil(x / 2)
-end
-
 
 return module
