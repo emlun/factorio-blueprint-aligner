@@ -10,6 +10,9 @@ local original_absolute_snapping = false
 local original_position_relative_to_grid = nil
 local original_restored = false
 
+local saved_blueprint = nil
+local saved_blueprint_attr = nil
+
 
 function translate_blueprint(dx, dy, blueprint)
   local entities = blueprint.get_blueprint_entities()
@@ -64,14 +67,53 @@ function begin_blueprint_alignment(event, relative)
   end
 end
 
+function begin_grid_selection(event)
+  local player = game.get_player(event.player_index)
+
+  if not (player.is_cursor_blueprint() and player.cursor_stack and player.cursor_stack.valid_for_read) then
+    log.error(event.player_index, {"blueprint-align.msg_bad_cursor"})
+    return
+  end
+
+  local x0, y0 = butil.dimensions(player.cursor_stack)
+
+  if butil.contains_rails(player.cursor_stack) and x0 % 2 ~= y0 % 2 then
+    log.error(event.player_index, {"blueprint-align.msg_prereq_no_mix_odd_and_even"})
+    return
+  end
+
+  local selection_tool = { name = mod_defines.prototype.item.grid_selection_tool }
+  if player.cursor_stack.can_set_stack(selection_tool) then
+    saved_blueprint_attr = {
+      rails = butil.contains_rails(player.cursor_stack),
+      oddity = x0 % 2,
+    }
+    saved_blueprint = player.cursor_stack.export_stack()
+    log.debug(event.player_index, "saved cursor stack")
+    if not player.cursor_stack.set_stack(selection_tool) then
+      log.debug(event.player_index, "failed to insert selection tool")
+    end
+
+    return true
+  else
+    log.debug(event.player_index, "could not set cursor stack")
+  end
+end
+
 script.on_event(
   defines.events.on_lua_shortcut,
   function(event)
     log.debug(event.player_index, string.format("on_lua_shortcut : %s", sutil.dumps(event)))
+
     if event.prototype_name == mod_defines.prototype.shortcut.align_absolute then
       begin_blueprint_alignment(event, false)
+
     elseif event.prototype_name == mod_defines.prototype.shortcut.align_relative then
       begin_blueprint_alignment(event, true)
+
+    elseif event.prototype_name == mod_defines.prototype.shortcut.set_grid then
+      begin_grid_selection(event)
+
     end
   end
 )
@@ -89,6 +131,17 @@ script.on_event(
   function(event)
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
     begin_blueprint_alignment(event, true)
+  end
+)
+
+script.on_event(
+  mod_defines.input.set_grid,
+  function(event)
+    local player = game.get_player(event.player_index)
+    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
+    if begin_grid_selection(event) then
+      player.play_sound{ path = "utility/blueprint_selection_started" }
+    end
   end
 )
 
@@ -140,6 +193,63 @@ script.on_event(
 )
 
 script.on_event(
+  defines.events.on_player_selected_area,
+  function(event)
+    local player = game.get_player(event.player_index)
+    if event.item == mod_defines.prototype.item.grid_selection_tool then
+      log.debug(event.player_index, string.format("on_player_selected_area : %s", sutil.dumps(event.area)))
+
+      local x_min = math.floor(event.area.left_top.x)
+      local y_min = math.floor(event.area.left_top.y)
+      local w = math.ceil(event.area.right_bottom.x) - x_min
+      local h = math.ceil(event.area.right_bottom.y) - y_min
+
+      if saved_blueprint then
+
+        if saved_blueprint_attr.rails then
+          if w % 2 ~= 0 or h % 2 ~= 0 then
+            player.play_sound{ path = "utility/cannot_build" }
+            player.create_local_flying_text{
+              text = {"blueprint-align.msg_odd_dimensions", w, h},
+              create_at_cursor = true,
+            }
+            return
+          end
+
+          local oddity = saved_blueprint_attr.oddity
+          if not (x_min % 2 == oddity and y_min % 2 == oddity) then
+            local msg_id = oddity == 0 and "blueprint-align.msg_must_be_even" or "blueprint-align.msg_must_be_odd"
+            player.play_sound{ path = "utility/cannot_build" }
+            player.create_local_flying_text{
+              text = {msg_id, x_min, y_min},
+              create_at_cursor = true,
+            }
+            return
+          end
+        end
+
+        x_min = x_min % w
+        y_min = y_min % h
+
+        log.debug(event.player_index, "restoring cursor stack")
+        player.cursor_stack.import_stack(saved_blueprint)
+        local blueprint = player.cursor_stack
+
+        blueprint.blueprint_snap_to_grid = { x = w, y = h }
+        blueprint.blueprint_absolute_snapping = true
+        blueprint.blueprint_position_relative_to_grid = { x = x_min, y = y_min }
+        saved_blueprint = nil
+        saved_blueprint_attr = nil
+
+        player.play_sound{ path = "utility/blueprint_selection_ended" }
+        player.create_local_flying_text{ text = {"blueprint-align.msg_grid_selection_finished"}, create_at_cursor = true }
+      end
+
+    end
+  end
+)
+
+script.on_event(
   mod_defines.input.clear_cursor,
   function(event)
     local player = game.get_player(event.player_index)
@@ -163,6 +273,28 @@ script.on_event(
 script.on_event(
   defines.events.on_player_cursor_stack_changed,
   function(event)
+    local player = game.get_player(event.player_index)
+
+    if saved_blueprint
+      and not (
+        player.cursor_stack
+        and player.cursor_stack.valid_for_read
+        and player.cursor_stack.name == mod_defines.prototype.item.grid_selection_tool
+    ) then
+      log.debug(event.player_index, "Grid selection aborted.")
+      log.debug(event.player_index,
+                string.format("player cursor stack: %s, %s, %s",
+                              sutil.dumps(player.cursor_stack),
+                              player.cursor_stack.valid,
+                              player.cursor_stack.valid_for_read))
+
+      player.clear_cursor()
+      player.cursor_stack.import_stack(saved_blueprint)
+      player.clear_cursor()
+
+      saved_blueprint = nil
+    end
+
     if aligning_blueprint then
       log.debug(event.player_index, "Blueprint alignment aborted.")
 
