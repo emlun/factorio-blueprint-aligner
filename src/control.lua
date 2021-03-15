@@ -47,11 +47,6 @@ function begin_blueprint_alignment(event, relative)
   local blueprint = player.cursor_stack
 
   if blueprint.blueprint_snap_to_grid then
-    if relative then
-      log.info(event.player_index, {"blueprint-align.msg_begin_relative"})
-    else
-      log.info(event.player_index, {"blueprint-align.msg_begin_absolute"})
-    end
     if original_position_relative_to_grid then
       blueprint.blueprint_absolute_snapping = true
       blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid
@@ -62,6 +57,7 @@ function begin_blueprint_alignment(event, relative)
     blueprint.blueprint_absolute_snapping = false
     aligning_blueprint = true
     align_relative = relative
+    return true
   else
     log.error(event.player_index, {"blueprint-align.msg_no_grid"})
   end
@@ -106,13 +102,19 @@ script.on_event(
     log.debug(event.player_index, string.format("on_lua_shortcut : %s", sutil.dumps(event)))
 
     if event.prototype_name == mod_defines.prototype.shortcut.align_absolute then
-      begin_blueprint_alignment(event, false)
+      if begin_blueprint_alignment(event, false) then
+        log.info(event.player_index, {"blueprint-align.msg_begin_absolute"})
+      end
 
     elseif event.prototype_name == mod_defines.prototype.shortcut.align_relative then
-      begin_blueprint_alignment(event, true)
+      if begin_blueprint_alignment(event, true) then
+        log.info(event.player_index, {"blueprint-align.msg_begin_relative"})
+      end
 
     elseif event.prototype_name == mod_defines.prototype.shortcut.set_grid then
-      begin_grid_selection(event)
+      if begin_grid_selection(event) then
+        log.info(event.player_index, {"blueprint-align.msg_grid_selection_started"})
+      end
 
     end
   end
@@ -121,16 +123,24 @@ script.on_event(
 script.on_event(
   mod_defines.input.align_absolute,
   function(event)
+    local player = game.get_player(event.player_index)
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
-    begin_blueprint_alignment(event, false)
+    if begin_blueprint_alignment(event, false) then
+      log.info(event.player_index, {"blueprint-align.msg_begin_absolute"})
+      player.play_sound{ path = "utility/blueprint_selection_started" }
+    end
   end
 )
 
 script.on_event(
   mod_defines.input.align_relative,
   function(event)
+    local player = game.get_player(event.player_index)
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
-    begin_blueprint_alignment(event, true)
+    if begin_blueprint_alignment(event, true) then
+      log.info(event.player_index, {"blueprint-align.msg_begin_relative"})
+      player.play_sound{ path = "utility/blueprint_selection_started" }
+    end
   end
 )
 
@@ -188,7 +198,11 @@ script.on_event(
       end
 
       aligning_blueprint = false
-      log.info(event.player_index, {"blueprint-align.msg_finished"})
+      player.play_sound{ path = "utility/blueprint_selection_ended" }
+      player.create_local_flying_text{
+        text = {"blueprint-align.msg_finished"},
+        create_at_cursor = true,
+      }
     end
   end
 )
