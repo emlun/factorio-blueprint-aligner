@@ -6,9 +6,7 @@ local sutil = require("util.string")
 
 local aligning_blueprint = false
 local align_relative = nil
-local original_absolute_snapping = false
 local original_position_relative_to_grid = nil
-local original_restored = false
 
 local saved_blueprint = nil
 local saved_blueprint_attr = nil
@@ -54,9 +52,11 @@ function begin_blueprint_alignment(event, relative)
     else
       log.info(event.player_index, {"blueprint-align.msg_begin_absolute"})
     end
+    if original_position_relative_to_grid then
+      blueprint.blueprint_absolute_snapping = true
+      blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid
+    end
 
-    original_restored = false
-    original_absolute_snapping = blueprint.blueprint_absolute_snapping
     original_position_relative_to_grid = blueprint.blueprint_position_relative_to_grid
 
     blueprint.blueprint_absolute_snapping = false
@@ -158,7 +158,8 @@ script.on_event(
       local rounding = butil.contains_rails(blueprint) and mutil.round2 or mutil.round
 
       blueprint.blueprint_absolute_snapping = true
-      blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid
+      blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid or { x = 0, y = 0 }
+      original_position_relative_to_grid = nil
 
       local center_x, center_y = butil.center(blueprint)
       local click_x_in_grid, click_y_in_grid = butil.world_to_blueprint_frame(
@@ -259,13 +260,12 @@ script.on_event(
       local blueprint = player.cursor_stack
 
       log.debug(event.player_index,
-                string.format("Restoring original settings: absolute %s, offset %s",
-                              original_absolute_snapping,
+                string.format("Restoring original settings: offset %s",
                               sutil.dumps(original_position_relative_to_grid)))
 
-      blueprint.blueprint_absolute_snapping = original_absolute_snapping
+      blueprint.blueprint_absolute_snapping = original_position_relative_to_grid ~= nil
       blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid
-      original_restored = true
+      original_position_relative_to_grid = false
     end
   end
 )
@@ -300,7 +300,7 @@ script.on_event(
 
       aligning_blueprint = false
 
-      if (not original_restored) and original_position_relative_to_grid then
+      if original_position_relative_to_grid then
         log.error(
           event.player_index, {
             "blueprint-align.msg_abort_without_restore",
@@ -309,7 +309,6 @@ script.on_event(
         })
       end
 
-      original_absolute_snapping = false
       original_position_relative_to_grid = nil
     end
   end
