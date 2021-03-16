@@ -234,6 +234,8 @@ script.on_event(
           x = blueprint.blueprint_position_relative_to_grid.x + dx,
           y = blueprint.blueprint_position_relative_to_grid.y + dy,
         }
+        local _, _, w, h = butil.dimensions(blueprint)
+        translate_blueprint(((center_x + w) % w) - center_x, ((center_y + h) % h) - center_y, blueprint)
       end
 
       aligning_blueprint = false
@@ -298,6 +300,9 @@ script.on_event(
         blueprint.blueprint_position_relative_to_grid = { x = x_min, y = y_min }
         saved_blueprint = nil
         saved_blueprint_attr = nil
+
+        local center_x, center_y = butil.center(blueprint)
+        translate_blueprint(((center_x + w) % w) - center_x, ((center_y + h) % h) - center_y, blueprint)
 
         if fudged then
           log.info(event.player_index, {"blueprint-align.msg_grid_selection_finished_fudged",
