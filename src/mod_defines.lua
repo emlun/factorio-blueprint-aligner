@@ -3,6 +3,9 @@ function prefix(s)
 end
 
 return {
+  sprite_path = function(path)
+    return "__blueprint-align__/graphics/" .. path
+  end,
   prototype = {
     item = {
       grid_selection_tool = prefix("item__grid-selection-tool"),

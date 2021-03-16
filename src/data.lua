@@ -12,7 +12,11 @@ local align_relative_shortcut = {
   name = mod_defines.prototype.shortcut.align_relative,
   associated_control_input = align_relative_input.name,
   action = "lua",
-  icon = data.raw["shortcut"]["give-blueprint"]["icon"],
+  icon = {
+    filename = mod_defines.sprite_path("align-entities-x32.png"),
+    flags = { "icon" },
+    size = 32,
+  },
 }
 
 local clear_cursor_input = {
@@ -25,10 +29,10 @@ local clear_cursor_input = {
 local grid_selection_tool = {
   type = "selection-tool",
   name = mod_defines.prototype.item.grid_selection_tool,
-  icon = data.raw.blueprint.blueprint.icon,
-  icon_size = data.raw.blueprint.blueprint.icon_size,
+  icon = mod_defines.sprite_path("select-grid-x32.png"),
+  icon_size = 32,
   stack_size = 1,
-  flags = { "spawnable", "only-in-cursor" },
+  flags = { "not-stackable", "only-in-cursor", "spawnable" },
   alt_selection_color = data.raw.blueprint.blueprint.alt_selection_color,
   alt_selection_cursor_box_type = "blueprint-snap-rectangle",
   alt_selection_mode = { "blueprint" },
@@ -50,7 +54,11 @@ local set_grid_shortcut = {
   name = mod_defines.prototype.shortcut.set_grid,
   associated_control_input = set_grid_input.name,
   action = "lua",
-  icon = data.raw["shortcut"]["give-blueprint"]["icon"],
+  icon = {
+    filename = mod_defines.sprite_path("select-grid-x32.png"),
+    flags = { "icon" },
+    size = 32,
+  },
 }
 
 local move_grid_up_input = {
