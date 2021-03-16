@@ -96,6 +96,28 @@ function begin_grid_selection(event)
   end
 end
 
+function move_blueprint_grid(event, dx, dy)
+  local player = game.get_player(event.player_index)
+  log.debug(event.player_index, string.format("move blueprint: %s, %s", dx, dy))
+
+  if player.is_cursor_blueprint() and player.cursor_stack and player.cursor_stack.valid_for_read then
+    local blueprint = player.cursor_stack
+
+    if blueprint.blueprint_absolute_snapping then
+      if butil.contains_rails(blueprint) then
+        dx, dy = 2 * dx, 2 * dy
+      end
+
+      local offset = blueprint.blueprint_position_relative_to_grid or { x = 0, y = 0 }
+      blueprint.blueprint_position_relative_to_grid = {
+        x = offset.x + dx,
+        y = offset.y + dy,
+      }
+      player.play_sound{ path = "utility/blueprint_selection_ended" }
+    end
+  end
+end
+
 script.on_event(
   defines.events.on_lua_shortcut,
   function(event)
@@ -156,6 +178,38 @@ script.on_event(
 )
 
 script.on_event(
+  mod_defines.input.move_grid_up,
+  function(event)
+    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
+    move_blueprint_grid(event, 0, -1)
+  end
+)
+
+script.on_event(
+  mod_defines.input.move_grid_down,
+  function(event)
+    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
+    move_blueprint_grid(event, 0, 1)
+  end
+)
+
+script.on_event(
+  mod_defines.input.move_grid_left,
+  function(event)
+    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
+    move_blueprint_grid(event, -1, 0)
+  end
+)
+
+script.on_event(
+  mod_defines.input.move_grid_right,
+  function(event)
+    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
+    move_blueprint_grid(event, 1, 0)
+  end
+)
+
+script.on_event(
   defines.events.on_pre_build,
   function(event)
     log.debug(event.player_index, string.format("on_pre_build : %s", sutil.dumps(event)))
@@ -167,8 +221,10 @@ script.on_event(
       local blueprint = player.cursor_stack
       local rounding = butil.contains_rails(blueprint) and mutil.round2 or mutil.round
 
-      blueprint.blueprint_absolute_snapping = true
-      blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid or { x = 0, y = 0 }
+      if not blueprint.blueprint_absolute_snapping then
+        blueprint.blueprint_absolute_snapping = true
+        blueprint.blueprint_position_relative_to_grid = original_position_relative_to_grid or { x = 0, y = 0 }
+      end
       original_position_relative_to_grid = nil
 
       local center_x, center_y = butil.center(blueprint)

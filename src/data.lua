@@ -65,6 +65,39 @@ local set_grid_shortcut = {
   icon = data.raw["shortcut"]["give-blueprint"]["icon"],
 }
 
+local move_grid_up_input = {
+  type = "custom-input",
+  name = mod_defines.input.move_grid_up,
+  key_sequence = "SHIFT + W",
+  consuming = "game-only",
+  order = "move-1",
+}
+
+local move_grid_down_input = {
+  type = "custom-input",
+  name = mod_defines.input.move_grid_down,
+  key_sequence = "SHIFT + S",
+  consuming = "game-only",
+  order = "move-2",
+}
+
+local move_grid_left_input = {
+  type = "custom-input",
+  name = mod_defines.input.move_grid_left,
+  key_sequence = "SHIFT + A",
+  consuming = "game-only",
+  order = "move-3",
+}
+
+local move_grid_right_input = {
+  type = "custom-input",
+  name = mod_defines.input.move_grid_right,
+  key_sequence = "SHIFT + D",
+  consuming = "game-only",
+  order = "move-4",
+}
+
+
 data:extend{
   align_absolute_shortcut,
   align_absolute_input,
@@ -74,4 +107,8 @@ data:extend{
   grid_selection_tool,
   set_grid_input,
   set_grid_shortcut,
+  move_grid_up_input,
+  move_grid_down_input,
+  move_grid_left_input,
+  move_grid_right_input,
 }
