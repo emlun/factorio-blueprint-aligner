@@ -14,4 +14,5 @@ $(DIST_DIR):
 
 $(DIST_FILE): $(DIST_DIR) $(shell find src)
 	rsync -avP --delete src/ "dist/$(DIST_BASENAME)/"
+	rsync -avP UNLICENSE CC-BY-SA-4.0.txt "dist/$(DIST_BASENAME)/"
 	cd dist && zip -r -FS $@ "$(DIST_BASENAME)"
