@@ -27,6 +27,8 @@ The mod adds two toolbar shortcuts:
   The entities in the blueprint will be moved within the alignment grid
   to match the selected location.
 
+Demo video: https://www.youtube.com/watch?v=45pQEFdYXsg
+
 Both shortcuts have hotkeys, which can be changed in the control settings.
 
 The mod will by default print interaction feedback to the console to guide new users.
