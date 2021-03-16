@@ -270,32 +270,36 @@ script.on_event(
     if event.item == mod_defines.prototype.item.grid_selection_tool then
       log.debug(event.player_index, string.format("on_player_selected_area : %s", sutil.dumps(event.area)))
 
-      local x_min = math.floor(event.area.left_top.x)
-      local y_min = math.floor(event.area.left_top.y)
-      local w = math.ceil(event.area.right_bottom.x) - x_min
-      local h = math.ceil(event.area.right_bottom.y) - y_min
+      local selected_x_min = math.floor(event.area.left_top.x)
+      local selected_y_min = math.floor(event.area.left_top.y)
+      local selected_w = math.ceil(event.area.right_bottom.x) - selected_x_min
+      local selected_h = math.ceil(event.area.right_bottom.y) - selected_y_min
+
+      local x_min = selected_x_min
+      local y_min = selected_y_min
+      local w = selected_w
+      local h = selected_h
 
       if saved_blueprint then
+        local fudged = false
 
         if saved_blueprint_attr.rails then
-          if w % 2 ~= 0 or h % 2 ~= 0 then
-            player.play_sound{ path = "utility/cannot_build" }
-            player.create_local_flying_text{
-              text = {"blueprint-align.msg_odd_dimensions", w, h},
-              create_at_cursor = true,
-            }
-            return
+          if w % 2 ~= 0 then
+            w = w + 1
+            fudged = true
+          end
+          if h % 2 ~= 0 then
+            h = h + 1
+            fudged = true
           end
 
-          local oddity = saved_blueprint_attr.oddity
-          if not (x_min % 2 == oddity and y_min % 2 == oddity) then
-            local msg_id = oddity == 0 and "blueprint-align.msg_must_be_even" or "blueprint-align.msg_must_be_odd"
-            player.play_sound{ path = "utility/cannot_build" }
-            player.create_local_flying_text{
-              text = {msg_id, x_min, y_min},
-              create_at_cursor = true,
-            }
-            return
+          if x_min % 2 ~= saved_blueprint_attr.oddity then
+            x_min = x_min - 1
+            fudged = true
+          end
+          if y_min % 2 ~= saved_blueprint_attr.oddity then
+            y_min = y_min - 1
+            fudged = true
           end
         end
 
@@ -312,8 +316,19 @@ script.on_event(
         saved_blueprint = nil
         saved_blueprint_attr = nil
 
-        player.play_sound{ path = "utility/blueprint_selection_ended" }
-        player.create_local_flying_text{ text = {"blueprint-align.msg_grid_selection_finished"}, create_at_cursor = true }
+        if fudged then
+          log.info(event.player_index, {"blueprint-align.msg_grid_selection_finished_fudged",
+                                        selected_w, selected_h,
+                                        selected_x_min, selected_y_min,
+                                        w, h,
+                                        x_min, y_min
+          })
+          player.play_sound{ path = "utility/console_message" }
+          player.create_local_flying_text{ text = {"blueprint-align.msg_grid_selection_finished_fudged_short"}, create_at_cursor = true }
+        else
+          player.play_sound{ path = "utility/blueprint_selection_ended" }
+          player.create_local_flying_text{ text = {"blueprint-align.msg_grid_selection_finished"}, create_at_cursor = true }
+        end
       end
 
     end
