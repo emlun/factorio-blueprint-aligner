@@ -4,6 +4,7 @@ local align_relative_input = {
   type = "custom-input",
   name = mod_defines.input.align_relative,
   key_sequence = "CONTROL + SHIFT + ALT + B",
+  order = "0-align-2",
 }
 
 local align_relative_shortcut = {
@@ -41,6 +42,7 @@ local set_grid_input = {
   type = "custom-input",
   name = mod_defines.input.set_grid,
   key_sequence = "CONTROL + SHIFT + B",
+  order = "0-align-1",
 }
 
 local set_grid_shortcut = {
@@ -56,7 +58,7 @@ local move_grid_up_input = {
   name = mod_defines.input.move_grid_up,
   key_sequence = "SHIFT + W",
   consuming = "game-only",
-  order = "move-1",
+  order = "1-move-1",
 }
 
 local move_grid_down_input = {
@@ -64,7 +66,7 @@ local move_grid_down_input = {
   name = mod_defines.input.move_grid_down,
   key_sequence = "SHIFT + S",
   consuming = "game-only",
-  order = "move-2",
+  order = "1-move-2",
 }
 
 local move_grid_left_input = {
@@ -72,7 +74,7 @@ local move_grid_left_input = {
   name = mod_defines.input.move_grid_left,
   key_sequence = "SHIFT + A",
   consuming = "game-only",
-  order = "move-3",
+  order = "1-move-3",
 }
 
 local move_grid_right_input = {
@@ -80,7 +82,7 @@ local move_grid_right_input = {
   name = mod_defines.input.move_grid_right,
   key_sequence = "SHIFT + D",
   consuming = "game-only",
-  order = "move-4",
+  order = "1-move-4",
 }
 
 
