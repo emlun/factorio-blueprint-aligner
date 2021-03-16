@@ -63,3 +63,13 @@ Ideas that have been tried and rejected.
   I haven't found a way to tell the rotation state of the cursor without placing the blueprint,
   so I can't cancel out the grid movement by counter-translating the entities.
   That makes the utility quite limited, and it's no fun to align a blueprint one or two tiles at a time.
+
+
+License
+---
+
+This is free and unencumbered software released into the public domain.
+For more information, please refer to [http://unlicense.org]().
+
+Graphics assets are licensed under a
+[Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/).
