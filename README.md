@@ -1,8 +1,8 @@
 Factorio blueprint aligner mod
 ===
 
-This is a small mod intended to help set the grid offset
-for blueprints with absolute grid alignment.
+This is a small mod intended to help set blueprint grid size and offsets
+by drawing the grid and placing the blueprint in the world.
 
 ![Mod thumbnail](./src/thumbnail.png)
 
@@ -16,7 +16,7 @@ The mod adds two toolbar shortcuts:
 
 - **Set blueprint grid**
 
-  Activate shortcut while holding a blueprint,
+  Activate while holding a blueprint,
   then select the area you would like to be one cell of the blueprint grid.
   The grid size and offset will be set on the blueprint.
 
