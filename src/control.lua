@@ -71,7 +71,8 @@ function begin_grid_selection(event)
     return
   end
 
-  local x0, y0 = butil.dimensions(player.cursor_stack)
+  local x0, y0, w, h = butil.dimensions(player.cursor_stack)
+  log.debug(event.player_index, string.format("blueprint dim: %s x %s @ (%s, %s)", w, h, x0, y0))
 
   if butil.contains_rails(player.cursor_stack) and x0 % 2 ~= y0 % 2 then
     log.error(event.player_index, {"blueprint-align.msg_prereq_no_mix_odd_and_even"})
