@@ -73,7 +73,19 @@ function module.dimensions(blueprint)
     y_max = math.max(y_hi, y_max or y_hi)
   end
 
-  return math.floor(x_min), math.floor(y_min), math.ceil(x_max - x_min), math.ceil(y_max - y_min)
+  if module.contains_rails(blueprint) then
+    x_min = mutil.floor2(x_min)
+    x_max = mutil.ceil2(x_max)
+    y_min = mutil.floor2(y_min)
+    y_max = mutil.ceil2(y_max)
+  else
+    x_min = math.floor(x_min)
+    x_max = math.ceil(x_max)
+    y_min = math.floor(y_min)
+    y_max = math.ceil(y_max)
+  end
+
+  return x_min, y_min, x_max - x_min, y_max - y_min
 end
 
 

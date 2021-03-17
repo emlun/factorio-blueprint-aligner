@@ -1,6 +1,16 @@
 local module = {}
 
 
+-- Round down to the nearest even integer.
+function module.floor2(x)
+  return 2 * math.floor(x / 2)
+end
+
+-- Round up to the nearest even integer.
+function module.ceil2(x)
+  return 2 * math.ceil(x / 2)
+end
+
 -- Round to the nearest integer.
 function module.round(x)
   local hi = math.ceil(x)
