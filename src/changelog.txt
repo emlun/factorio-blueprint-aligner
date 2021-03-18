@@ -1,0 +1,78 @@
+---------------------------------------------------------------------------------------------------
+Version: 1.0.4
+Date: 2021-03-18
+  Other:
+    - Added changelog.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.0.3
+Date: 2021-03-18
+  Bugfixes:
+    - Fixed blueprint size computation when curved rails are at the edges. This
+      also fixes some coordinate snapping issues for such blueprints.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.0.2
+Date: 2021-03-16
+  Other:
+    - Updated thumbnail.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.0.1
+Date: 2021-03-16
+  Other:
+    - Updated thumbnail.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.0.0
+Date: 2021-03-16
+  Features:
+    - Added shortcut for aligning blueprint entities within grid.
+    - While holding a blueprint with absolute offset, press Shift+WASD to move the
+      absolute offset. Hotkeys can be changed in control settings.
+  Graphics:
+    - Added custom icons.
+  Changes:
+    - Replaced grid alignment shortcut with grid selection tool shortcut.
+  Bugfixes:
+    - Made coordinate snapping much more robust.
+  Control:
+    - Added default mapping for grid alignment shortcut.
+
+---------------------------------------------------------------------------------------------------
+Version: 0.4.0
+Date: 2021-03-14
+  Bugfixes:
+    - Fixed coordinate snapping in various situations, including with rails.
+  Control:
+    - Added optional hotkey for blueprint alignment shortcut.
+
+---------------------------------------------------------------------------------------------------
+Version: 0.3.0
+Date: 2021-03-13
+  Features:
+    - Support all rotations and flips.
+
+---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2021-03-13
+  Features:
+    - Support blueprints with nonzero "Grid position".
+    - Restore original absolute offset if canceled by clearing cursor.
+    - Show abort confirmation only if absolute offset could not be restored.
+  Bugfixes:
+    - Fix crash when blueprint contains no entities or no tiles.
+
+---------------------------------------------------------------------------------------------------
+Version: 0.1.1
+Date: 2021-03-11
+  Other:
+    - Minor packaging improvements.
+
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2021-03-11
+  Features:
+    - Initial release
+    - there will be many others
+    - but this one is first.

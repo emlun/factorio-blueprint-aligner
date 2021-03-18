@@ -31,6 +31,10 @@ Demo video: https://www.youtube.com/watch?v=45pQEFdYXsg
 
 Both shortcuts have hotkeys, which can be changed in the control settings.
 
+In addition, while holding a blueprint with absolute alignment you can use
+<kbd>Shift + WASD</kbd> to move the absolute offset.
+These key bindings can also be changed in the control settings.
+
 The mod will by default print interaction feedback to the console to guide new users.
 This can be turned off in the mod settings.
 
@@ -58,13 +62,12 @@ Ideas that have been tried and rejected.
   This is a nonintuitive user interaction, and gets quite clunky
   if the blueprint grid is larger than what fits comfortably on one screen.
 
-- Use WASD keys to move absolute grid while holding blueprint
+- Keep blueprint entities in place when moving offset with <kbd>Shift+WASD</kbd>
 
-  This works well - you can even keep the entities in the same place on the map while moving the grid!
-  ...But it only works for the natural blueprint orientation.
+  This works... but only for the natural blueprint orientation.
   I haven't found a way to tell the rotation state of the cursor without placing the blueprint,
-  so I can't cancel out the grid movement by counter-translating the entities.
-  That makes the utility quite limited, and it's no fun to align a blueprint one or two tiles at a time.
+  which means the blueprint entities drift in different directions
+  depending on how you have the blueprint rotated while holding it.
 
 
 License
