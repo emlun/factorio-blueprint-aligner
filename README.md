@@ -27,6 +27,8 @@ The mod adds two toolbar shortcuts:
   The entities in the blueprint will be moved within the alignment grid
   to match the selected location.
 
+Demo video: https://www.youtube.com/watch?v=45pQEFdYXsg
+
 Both shortcuts have hotkeys, which can be changed in the control settings.
 
 The mod will by default print interaction feedback to the console to guide new users.
@@ -59,7 +61,7 @@ Ideas that have been tried and rejected.
 - Use WASD keys to move absolute grid while holding blueprint
 
   This works well - you can even keep the entities in the same place on the map while moving the grid!
-  ...But it only for the natural blueprint orientation.
+  ...But it only works for the natural blueprint orientation.
   I haven't found a way to tell the rotation state of the cursor without placing the blueprint,
   so I can't cancel out the grid movement by counter-translating the entities.
   That makes the utility quite limited, and it's no fun to align a blueprint one or two tiles at a time.

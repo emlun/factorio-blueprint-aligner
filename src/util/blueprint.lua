@@ -13,6 +13,22 @@ function module.contains_rails(blueprint)
   return false
 end
 
+function rotate_box(x_left, x_right, y_top, y_bottom, direction)
+  if direction == 0 or direction == 4 then
+    return x_left, x_right, y_top, y_bottom
+  elseif direction == 2 or direction == 6 then
+    return y_top, y_bottom, x_left, x_right
+
+  -- These are mainly designed for curved rails, will likely break for other 8-way entities
+  elseif direction == 1 or direction == 5 then
+    return x_left, x_right, y_top, y_bottom
+  elseif direction == 3 or direction == 7 then
+    return y_top, y_bottom, x_left, x_right
+
+  else
+    assert(direction < 8 and direction >= 0, "Unknown direction: " .. direction)
+  end
+end
 
 -- Compute the bounding box for entities and tiles in the blueprint,
 -- in the blueprint's internal coordinate frame.
@@ -25,10 +41,19 @@ function module.dimensions(blueprint)
   for _, ent in pairs(blueprint.get_blueprint_entities() or {}) do
     local prots = game.get_filtered_entity_prototypes{{ filter = "name", name = ent.name }}
 
-    local x_lo = ent.position.x + prots[ent.name].selection_box.left_top.x
-    local x_hi = ent.position.x + prots[ent.name].selection_box.right_bottom.x
-    local y_lo = ent.position.y + prots[ent.name].selection_box.left_top.y
-    local y_hi = ent.position.y + prots[ent.name].selection_box.right_bottom.y
+    local box = prots[ent.name].secondary_collision_box or prots[ent.name].selection_box
+
+    local x_left = box.left_top.x
+    local x_right = box.right_bottom.x
+    local y_top = box.left_top.y
+    local y_bottom = box.right_bottom.y
+
+    x_left, x_right, y_top, y_bottom = rotate_box(x_left, x_right, y_top, y_bottom, ent.direction or 0)
+
+    local x_lo = ent.position.x + x_left
+    local x_hi = ent.position.x + x_right
+    local y_lo = ent.position.y + y_top
+    local y_hi = ent.position.y + y_bottom
 
     x_min = math.min(x_lo, x_min or x_lo)
     x_max = math.max(x_hi, x_max or x_hi)
@@ -48,7 +73,19 @@ function module.dimensions(blueprint)
     y_max = math.max(y_hi, y_max or y_hi)
   end
 
-  return math.floor(x_min), math.floor(y_min), math.ceil(x_max - x_min), math.ceil(y_max - y_min)
+  if module.contains_rails(blueprint) then
+    x_min = mutil.floor2(x_min)
+    x_max = mutil.ceil2(x_max)
+    y_min = mutil.floor2(y_min)
+    y_max = mutil.ceil2(y_max)
+  else
+    x_min = math.floor(x_min)
+    x_max = math.ceil(x_max)
+    y_min = math.floor(y_min)
+    y_max = math.ceil(y_max)
+  end
+
+  return x_min, y_min, x_max - x_min, y_max - y_min
 end
 
 
