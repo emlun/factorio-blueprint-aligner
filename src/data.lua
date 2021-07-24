@@ -1,5 +1,23 @@
 local mod_defines = require("mod_defines")
 
+local align_absolute_input = {
+  type = "custom-input",
+  name = mod_defines.input.align_absolute,
+  key_sequence = "CONTROL + ALT + B",
+}
+
+local align_absolute_shortcut = {
+  type = "shortcut",
+  name = mod_defines.prototype.shortcut.align_absolute,
+  associated_control_input = align_absolute_input.name,
+  action = "lua",
+  icon = {
+    filename = mod_defines.sprite_path("set-offset-x32.png"),
+    flags = { "icon" },
+    size = 32,
+  },
+}
+
 local align_relative_input = {
   type = "custom-input",
   name = mod_defines.input.align_relative,
@@ -32,7 +50,7 @@ local grid_selection_tool = {
   icon = mod_defines.sprite_path("select-grid-x32.png"),
   icon_size = 32,
   stack_size = 1,
-  flags = { "not-stackable", "only-in-cursor", "spawnable" },
+  flags = { "hidden", "not-stackable", "only-in-cursor", "spawnable" },
   alt_selection_color = data.raw.blueprint.blueprint.alt_selection_color,
   alt_selection_cursor_box_type = "blueprint-snap-rectangle",
   alt_selection_mode = { "blueprint" },
@@ -95,6 +113,8 @@ local move_grid_right_input = {
 
 
 data:extend{
+  align_absolute_shortcut,
+  align_absolute_input,
   align_relative_shortcut,
   align_relative_input,
   clear_cursor_input,

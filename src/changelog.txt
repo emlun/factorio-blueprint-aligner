@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.0
+Date: 2021-07-24
+  Features:
+    - Added shortcut "Set blueprint grid offset". This sets the absolute offset
+      without changing grid size or moving entities within the grid.
+
+  Bugfixes:
+    - Grid selection tool is now hidden from signals GUI.
+
+---------------------------------------------------------------------------------------------------
 Version: 1.0.4
 Date: 2021-03-18
   Other:

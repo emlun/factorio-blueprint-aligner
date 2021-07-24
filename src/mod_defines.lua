@@ -11,11 +11,13 @@ return {
       grid_selection_tool = prefix("item__grid-selection-tool"),
     },
     shortcut = {
+      align_absolute = prefix("shortcut__align-blueprint-absolute"),
       align_relative = prefix("shortcut__align-blueprint-relative"),
       set_grid = prefix("shortcut__set-grid"),
     },
   },
   input = {
+    align_absolute = prefix("input__align-blueprint-absolute"),
     align_relative = prefix("input__align-blueprint-relative"),
     set_grid = prefix("input__set-grid"),
     clear_cursor = prefix("clear-cursor"),

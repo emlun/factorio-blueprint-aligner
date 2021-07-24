@@ -12,7 +12,7 @@ Mod portal: https://mods.factorio.com/mod/blueprint-align
 Usage
 ---
 
-The mod adds two toolbar shortcuts:
+The mod adds three toolbar shortcuts:
 
 - **Set blueprint grid**
 
@@ -27,9 +27,15 @@ The mod adds two toolbar shortcuts:
   The entities in the blueprint will be moved within the alignment grid
   to match the selected location.
 
-Demo video: https://www.youtube.com/watch?v=45pQEFdYXsg
+- **Set blueprint grid offset**
 
-Both shortcuts have hotkeys, which can be changed in the control settings.
+  Activate while holding a blueprint with an alignment grid set,
+  then place the blueprint in the world.
+  The absolute grid offset of the blueprint will be set to match the selected location.
+
+Demo video (v1.0): https://www.youtube.com/watch?v=45pQEFdYXsg
+
+All shortcuts have hotkeys, which can be changed in the control settings.
 
 In addition, while holding a blueprint with absolute alignment you can use
 <kbd>Shift + WASD</kbd> to move the absolute offset.
@@ -42,7 +48,8 @@ This can be turned off in the mod settings.
 Caveats
 ---
 
-- The "Align blueprint entities" action will initially set the blueprint to relative grid alignment.
+- The "Align blueprint entities" and "Set blueprint grid offset" actions
+  will initially set the blueprint to relative grid alignment.
   If you cancel the alignment by some method other than using the "clear cursor" keyboard shortcut,
   the previous absolute grid offset will not be restored.
 
@@ -53,14 +60,6 @@ Rejected ideas
 ---
 
 Ideas that have been tried and rejected.
-
-- Place absolute grid the same way as aligning entities within grid
-
-  This was the very first implementation, and it works well.
-  However with the introduction of aligning entities within grid,
-  this instead became about just placing the blueprint grid outline while ignoring the entities.
-  This is a nonintuitive user interaction, and gets quite clunky
-  if the blueprint grid is larger than what fits comfortably on one screen.
 
 - Keep blueprint entities in place when moving offset with <kbd>Shift+WASD</kbd>
 
