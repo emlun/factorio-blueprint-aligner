@@ -124,7 +124,12 @@ script.on_event(
   function(event)
     log.debug(event.player_index, string.format("on_lua_shortcut : %s", sutil.dumps(event)))
 
-    if event.prototype_name == mod_defines.prototype.shortcut.align_relative then
+    if event.prototype_name == mod_defines.prototype.shortcut.align_absolute then
+      if begin_blueprint_alignment(event, false) then
+        log.info(event.player_index, {"blueprint-align.msg_begin_absolute"})
+      end
+
+    elseif event.prototype_name == mod_defines.prototype.shortcut.align_relative then
       if begin_blueprint_alignment(event, true) then
         log.info(event.player_index, {"blueprint-align.msg_begin_relative"})
       end
@@ -134,6 +139,18 @@ script.on_event(
         log.info(event.player_index, {"blueprint-align.msg_grid_selection_started"})
       end
 
+    end
+  end
+)
+
+script.on_event(
+  mod_defines.input.align_absolute,
+  function(event)
+    local player = game.get_player(event.player_index)
+    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
+    if begin_blueprint_alignment(event, false) then
+      log.info(event.player_index, {"blueprint-align.msg_begin_absolute"})
+      player.play_sound{ path = "utility/blueprint_selection_started" }
     end
   end
 )

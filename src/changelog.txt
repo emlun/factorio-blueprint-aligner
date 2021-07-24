@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.1.0
+Date: 2021-07-24
+  Other:
+    - Added shortcut "Set blueprint grid offset". This sets the absolute offset
+      without changing grid size or moving entities within the grid.
+
+---------------------------------------------------------------------------------------------------
 Version: 1.0.4
 Date: 2021-03-18
   Other:
