@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.2.0
+Date: 2022-10-06
+  Features:
+    - Shift+WASD to move absolute offset now also works while holding a
+      blueprint book, including nested books.
+
+  Bugfixes:
+    - Fixed crash on Shift+WASD while holding a blueprint book.
+
+---------------------------------------------------------------------------------------------------
 Version: 1.1.0
 Date: 2021-07-24
   Features:

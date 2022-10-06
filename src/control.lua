@@ -104,7 +104,11 @@ function move_blueprint_grid(event, dx, dy)
   if player.is_cursor_blueprint() and player.cursor_stack and player.cursor_stack.valid_for_read then
     local blueprint = player.cursor_stack
 
-    if blueprint.blueprint_absolute_snapping then
+    while blueprint.is_blueprint_book do
+      blueprint = blueprint.get_inventory(defines.inventory.item_main)[blueprint.active_index]
+    end
+
+    if blueprint.is_blueprint and blueprint.blueprint_absolute_snapping then
       if butil.contains_rails(blueprint) then
         dx, dy = 2 * dx, 2 * dy
       end
