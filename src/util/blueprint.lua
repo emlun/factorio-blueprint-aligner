@@ -14,20 +14,9 @@ function module.contains_rails(blueprint)
 end
 
 function rotate_box(x_left, x_right, y_top, y_bottom, direction)
-  if direction == 0 or direction == 4 then
-    return x_left, x_right, y_top, y_bottom
-  elseif direction == 2 or direction == 6 then
-    return y_top, y_bottom, x_left, x_right
-
-  -- These are mainly designed for curved rails, will likely break for other 8-way entities
-  elseif direction == 1 or direction == 5 then
-    return x_left, x_right, y_top, y_bottom
-  elseif direction == 3 or direction == 7 then
-    return y_top, y_bottom, x_left, x_right
-
-  else
-    assert(direction < 8 and direction >= 0, "Unknown direction: " .. direction)
-  end
+  xl, yt = mutil.rot(x_left, y_top, direction)
+  xr, yb = mutil.rot(x_right, y_bottom, direction)
+  return xl, xr, yt, yb
 end
 
 -- Compute the bounding box for entities and tiles in the blueprint,
@@ -39,7 +28,7 @@ function module.dimensions(blueprint)
   local y_max = nil
 
   for _, ent in pairs(blueprint.get_blueprint_entities() or {}) do
-    local prots = game.get_filtered_entity_prototypes{{ filter = "name", name = ent.name }}
+    local prots = prototypes.get_entity_filtered{{ filter = "name", name = ent.name }}
 
     local box = prots[ent.name].secondary_collision_box or prots[ent.name].selection_box
 
@@ -117,31 +106,31 @@ function module.world_to_blueprint_frame(x, y, direction, flip_x, flip_y, bluepr
 
   local grid_w = blueprint.blueprint_snap_to_grid.x
   local grid_h = blueprint.blueprint_snap_to_grid.y
+  local swap_dims = direction == defines.direction.east or direction == defines.direction.west
+  if swap_dims then
+    grid_w, grid_h = grid_h, grid_w
+  end
 
   local bx, by = 0, 0
 
-  if direction == 0 then
+  if direction == defines.direction.north then
     -- grid origin is top-left
     bx = (((x - grid_x0) % grid_w) + grid_w) % grid_w
     by = (((y - grid_y0) % grid_h) + grid_h) % grid_h
-
-  elseif direction == 2 then
+  elseif direction == defines.direction.east then
     -- grid origin is top-right
     bx = (((y - grid_y0) % grid_h) + grid_h) % grid_h
     by = (((grid_x0 - x) % grid_w) + grid_w) % grid_w
-
-  elseif direction == 4 then
+  elseif direction == defines.direction.south then
     -- grid origin is bottom-right
     bx = (((grid_x0 - x) % grid_w) + grid_w) % grid_w
     by = (((grid_y0 - y) % grid_h) + grid_h) % grid_h
-
-  else
+  elseif direction == defines.direction.west then
     -- grid origin is bottom-left
     bx = (((grid_y0 - y) % grid_h) + grid_h) % grid_h
     by = (((x - grid_x0) % grid_w) + grid_w) % grid_w
   end
 
-  local swap_dims = direction == 2 or direction == 6
   if flip_x then
     bx = (swap_dims and grid_h or grid_w) - bx
   end

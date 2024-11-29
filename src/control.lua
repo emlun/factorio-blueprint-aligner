@@ -97,32 +97,6 @@ function begin_grid_selection(event)
   end
 end
 
-function move_blueprint_grid(event, dx, dy)
-  local player = game.get_player(event.player_index)
-  log.debug(event.player_index, string.format("move blueprint: %s, %s", dx, dy))
-
-  if player.is_cursor_blueprint() and player.cursor_stack and player.cursor_stack.valid_for_read then
-    local blueprint = player.cursor_stack
-
-    while blueprint.is_blueprint_book do
-      blueprint = blueprint.get_inventory(defines.inventory.item_main)[blueprint.active_index]
-    end
-
-    if blueprint.is_blueprint and blueprint.blueprint_absolute_snapping then
-      if butil.contains_rails(blueprint) then
-        dx, dy = 2 * dx, 2 * dy
-      end
-
-      local offset = blueprint.blueprint_position_relative_to_grid or { x = 0, y = 0 }
-      blueprint.blueprint_position_relative_to_grid = {
-        x = offset.x + dx,
-        y = offset.y + dy,
-      }
-      player.play_sound{ path = "utility/blueprint_selection_ended" }
-    end
-  end
-end
-
 script.on_event(
   defines.events.on_lua_shortcut,
   function(event)
@@ -154,7 +128,7 @@ script.on_event(
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
     if begin_blueprint_alignment(event, false) then
       log.info(event.player_index, {"blueprint-align.msg_begin_absolute"})
-      player.play_sound{ path = "utility/blueprint_selection_started" }
+      player.play_sound{ path = mod_defines.sound.align_start }
     end
   end
 )
@@ -166,7 +140,7 @@ script.on_event(
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
     if begin_blueprint_alignment(event, true) then
       log.info(event.player_index, {"blueprint-align.msg_begin_relative"})
-      player.play_sound{ path = "utility/blueprint_selection_started" }
+      player.play_sound{ path = mod_defines.sound.align_start }
     end
   end
 )
@@ -177,40 +151,8 @@ script.on_event(
     local player = game.get_player(event.player_index)
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
     if begin_grid_selection(event) then
-      player.play_sound{ path = "utility/blueprint_selection_started" }
+      player.play_sound{ path = mod_defines.sound.align_start }
     end
-  end
-)
-
-script.on_event(
-  mod_defines.input.move_grid_up,
-  function(event)
-    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
-    move_blueprint_grid(event, 0, -1)
-  end
-)
-
-script.on_event(
-  mod_defines.input.move_grid_down,
-  function(event)
-    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
-    move_blueprint_grid(event, 0, 1)
-  end
-)
-
-script.on_event(
-  mod_defines.input.move_grid_left,
-  function(event)
-    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
-    move_blueprint_grid(event, -1, 0)
-  end
-)
-
-script.on_event(
-  mod_defines.input.move_grid_right,
-  function(event)
-    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
-    move_blueprint_grid(event, 1, 0)
   end
 )
 
@@ -252,6 +194,20 @@ script.on_event(
       if align_relative then
         translate_blueprint(dx, dy, blueprint)
       else
+        dx, dy = mutil.rot(dx, dy, event.direction)
+        if event.flip_horizontal then
+          dx = -dx
+        end
+        if event.flip_vertical then
+          dy = -dy
+        end
+        local flip_xor = (
+          (event.flip_horizontal and not event.flip_vertical)
+          or (event.flip_vertical and not event.flip_horizontal))
+        if (event.direction == defines.direction.east or event.direction == defines.direction.west) and flip_xor then
+          dx, dy = -dx, -dy
+        end
+
         blueprint.blueprint_position_relative_to_grid = {
           x = blueprint.blueprint_position_relative_to_grid.x + dx,
           y = blueprint.blueprint_position_relative_to_grid.y + dy,
@@ -261,7 +217,7 @@ script.on_event(
       end
 
       aligning_blueprint = false
-      player.play_sound{ path = "utility/blueprint_selection_ended" }
+      player.play_sound{ path = mod_defines.sound.align_end }
       player.create_local_flying_text{
         text = {"blueprint-align.msg_finished"},
         create_at_cursor = true,
@@ -336,7 +292,7 @@ script.on_event(
           player.play_sound{ path = "utility/console_message" }
           player.create_local_flying_text{ text = {"blueprint-align.msg_grid_selection_finished_fudged_short"}, create_at_cursor = true }
         else
-          player.play_sound{ path = "utility/blueprint_selection_ended" }
+          player.play_sound{ path = mod_defines.sound.align_end }
           player.create_local_flying_text{ text = {"blueprint-align.msg_grid_selection_finished"}, create_at_cursor = true }
         end
       end

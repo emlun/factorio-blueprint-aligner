@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.0
+Date: 2024-11-28
+  Features:
+    - Factorio 2.0 compatibility
+
+  Changes:
+    - Shift+WASD controls to move absolute offset deleted since they have been
+      incorporated into the base game.
+
+---------------------------------------------------------------------------------------------------
 Version: 1.2.0
 Date: 2022-10-06
   Features:
