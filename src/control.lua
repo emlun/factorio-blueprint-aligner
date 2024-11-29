@@ -35,16 +35,16 @@ end
 function begin_blueprint_alignment(event, relative)
   local player = game.get_player(event.player_index)
 
-  if not (player.is_cursor_blueprint() and player.cursor_stack and player.cursor_stack.valid_for_read) then
+  if not (player.is_cursor_blueprint() and player.cursor_record and player.cursor_record.valid_for_write) then
     log.error(event.player_index, {"blueprint-align.msg_bad_cursor"})
     return
   end
 
-  log.debug(event.player_index, string.format("snap : %s", sutil.dumps(player.cursor_stack.blueprint_snap_to_grid)))
-  log.debug(event.player_index, string.format("pos : %s", sutil.dumps(player.cursor_stack.blueprint_position_relative_to_grid)))
-  log.debug(event.player_index, string.format("absolute : %s", sutil.dumps(player.cursor_stack.blueprint_absolute_snapping)))
+  log.debug(event.player_index, string.format("snap : %s", sutil.dumps(player.cursor_record.blueprint_snap_to_grid)))
+  log.debug(event.player_index, string.format("pos : %s", sutil.dumps(player.cursor_record.blueprint_position_relative_to_grid)))
+  log.debug(event.player_index, string.format("absolute : %s", sutil.dumps(player.cursor_record.blueprint_absolute_snapping)))
 
-  local blueprint = player.cursor_stack
+  local blueprint = player.cursor_record
 
   if blueprint.blueprint_snap_to_grid then
     if original_position_relative_to_grid then
@@ -165,7 +165,7 @@ script.on_event(
       log.debug(event.player_index, string.format("Finishing blueprint alignment..."))
 
       local player = game.get_player(event.player_index)
-      local blueprint = player.cursor_stack
+      local blueprint = player.cursor_record
       local rounding = butil.contains_rails(blueprint) and mutil.round2 or mutil.round
 
       if not blueprint.blueprint_absolute_snapping then
