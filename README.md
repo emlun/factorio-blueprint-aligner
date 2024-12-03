@@ -47,9 +47,7 @@ Caveats
 - The "Align blueprint entities" and "Set blueprint grid offset" actions
   will initially set the blueprint to relative grid alignment.
   If you cancel the alignment by some method other than using the "clear cursor" keyboard shortcut,
-  the previous absolute grid offset will not be restored.
-
-- Currently only works with blueprints from inventory, not from the library.
+  the previous absolute grid offset might not be restored.
 
 
 License

@@ -1,8 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 2.0.0
-Date: 2024-11-28
+Date: 2024-12-03
   Features:
     - Factorio 2.0 compatibility
+    - All alignment actions now work both with blueprints from inventory and
+      from game library (but not from "my library").
 
   Changes:
     - Shift+WASD controls to move absolute offset deleted since they have been
