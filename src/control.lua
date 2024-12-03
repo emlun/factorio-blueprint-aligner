@@ -8,8 +8,10 @@ local aligning_blueprint = false
 local align_relative = nil
 local original_position_relative_to_grid = nil
 
-local saved_blueprint = nil
-local saved_blueprint_attr = nil
+-- LuaRecord: used when grid selection tool is used with library record
+local select_grid_blueprint = nil
+-- string: used when grid selection tool is used with blueprint item in inventory
+local select_grid_exported_blueprint = nil
 
 
 function translate_blueprint(dx, dy, blueprint)
@@ -32,19 +34,26 @@ function translate_blueprint(dx, dy, blueprint)
   end
 end
 
+function get_cursor_blueprint(player)
+  if (player.cursor_record and player.cursor_record.valid_for_write and player.cursor_record.type == "blueprint") then
+    return player.cursor_record
+  elseif (player.cursor_stack and player.cursor_stack.is_blueprint) then
+    return player.cursor_stack
+  end
+end
+
 function begin_blueprint_alignment(event, relative)
   local player = game.get_player(event.player_index)
 
-  if not (player.is_cursor_blueprint() and player.cursor_stack and player.cursor_stack.valid_for_read) then
+  local blueprint = get_cursor_blueprint(player)
+  if not blueprint then
     log.error(event.player_index, {"blueprint-align.msg_bad_cursor"})
     return
   end
 
-  log.debug(event.player_index, string.format("snap : %s", sutil.dumps(player.cursor_stack.blueprint_snap_to_grid)))
-  log.debug(event.player_index, string.format("pos : %s", sutil.dumps(player.cursor_stack.blueprint_position_relative_to_grid)))
-  log.debug(event.player_index, string.format("absolute : %s", sutil.dumps(player.cursor_stack.blueprint_absolute_snapping)))
-
-  local blueprint = player.cursor_stack
+  log.debug(event.player_index, string.format("snap : %s", sutil.dumps(blueprint.blueprint_snap_to_grid)))
+  log.debug(event.player_index, string.format("pos : %s", sutil.dumps(blueprint.blueprint_position_relative_to_grid)))
+  log.debug(event.player_index, string.format("absolute : %s", sutil.dumps(blueprint.blueprint_absolute_snapping)))
 
   if blueprint.blueprint_snap_to_grid then
     if original_position_relative_to_grid then
@@ -66,27 +75,28 @@ end
 function begin_grid_selection(event)
   local player = game.get_player(event.player_index)
 
-  if not (player.is_cursor_blueprint() and player.cursor_stack and player.cursor_stack.valid_for_read) then
+  local blueprint = get_cursor_blueprint(player)
+  if not blueprint then
     log.error(event.player_index, {"blueprint-align.msg_bad_cursor"})
     return
   end
 
-  local x0, y0, w, h = butil.dimensions(player.cursor_stack)
+  local x0, y0, w, h = butil.dimensions(blueprint)
   log.debug(event.player_index, string.format("blueprint dim: %s x %s @ (%s, %s)", w, h, x0, y0))
 
-  if butil.contains_rails(player.cursor_stack) and x0 % 2 ~= y0 % 2 then
+  if butil.contains_rails(blueprint) and x0 % 2 ~= y0 % 2 then
     log.error(event.player_index, {"blueprint-align.msg_prereq_no_mix_odd_and_even"})
     return
   end
 
   local selection_tool = { name = mod_defines.prototype.item.grid_selection_tool }
   if player.cursor_stack.can_set_stack(selection_tool) then
-    saved_blueprint_attr = {
-      rails = butil.contains_rails(player.cursor_stack),
-      oddity = x0 % 2,
-    }
-    saved_blueprint = player.cursor_stack.export_stack()
-    log.debug(event.player_index, "saved cursor stack")
+    select_grid_blueprint = blueprint
+    if not player.cursor_record then
+      select_grid_exported_blueprint = player.cursor_stack.export_stack()
+    end
+
+    log.debug(event.player_index, string.format("saved select_grid_blueprint: %s", select_grid_blueprint))
     if not player.cursor_stack.set_stack(selection_tool) then
       log.debug(event.player_index, "failed to insert selection tool")
     end
@@ -94,32 +104,6 @@ function begin_grid_selection(event)
     return true
   else
     log.debug(event.player_index, "could not set cursor stack")
-  end
-end
-
-function move_blueprint_grid(event, dx, dy)
-  local player = game.get_player(event.player_index)
-  log.debug(event.player_index, string.format("move blueprint: %s, %s", dx, dy))
-
-  if player.is_cursor_blueprint() and player.cursor_stack and player.cursor_stack.valid_for_read then
-    local blueprint = player.cursor_stack
-
-    while blueprint.is_blueprint_book do
-      blueprint = blueprint.get_inventory(defines.inventory.item_main)[blueprint.active_index]
-    end
-
-    if blueprint.is_blueprint and blueprint.blueprint_absolute_snapping then
-      if butil.contains_rails(blueprint) then
-        dx, dy = 2 * dx, 2 * dy
-      end
-
-      local offset = blueprint.blueprint_position_relative_to_grid or { x = 0, y = 0 }
-      blueprint.blueprint_position_relative_to_grid = {
-        x = offset.x + dx,
-        y = offset.y + dy,
-      }
-      player.play_sound{ path = "utility/blueprint_selection_ended" }
-    end
   end
 end
 
@@ -154,7 +138,7 @@ script.on_event(
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
     if begin_blueprint_alignment(event, false) then
       log.info(event.player_index, {"blueprint-align.msg_begin_absolute"})
-      player.play_sound{ path = "utility/blueprint_selection_started" }
+      player.play_sound{ path = mod_defines.sound.align_start }
     end
   end
 )
@@ -166,7 +150,7 @@ script.on_event(
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
     if begin_blueprint_alignment(event, true) then
       log.info(event.player_index, {"blueprint-align.msg_begin_relative"})
-      player.play_sound{ path = "utility/blueprint_selection_started" }
+      player.play_sound{ path = mod_defines.sound.align_start }
     end
   end
 )
@@ -177,40 +161,8 @@ script.on_event(
     local player = game.get_player(event.player_index)
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
     if begin_grid_selection(event) then
-      player.play_sound{ path = "utility/blueprint_selection_started" }
+      player.play_sound{ path = mod_defines.sound.align_start }
     end
-  end
-)
-
-script.on_event(
-  mod_defines.input.move_grid_up,
-  function(event)
-    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
-    move_blueprint_grid(event, 0, -1)
-  end
-)
-
-script.on_event(
-  mod_defines.input.move_grid_down,
-  function(event)
-    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
-    move_blueprint_grid(event, 0, 1)
-  end
-)
-
-script.on_event(
-  mod_defines.input.move_grid_left,
-  function(event)
-    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
-    move_blueprint_grid(event, -1, 0)
-  end
-)
-
-script.on_event(
-  mod_defines.input.move_grid_right,
-  function(event)
-    log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
-    move_blueprint_grid(event, 1, 0)
   end
 )
 
@@ -223,7 +175,11 @@ script.on_event(
       log.debug(event.player_index, string.format("Finishing blueprint alignment..."))
 
       local player = game.get_player(event.player_index)
-      local blueprint = player.cursor_stack
+      local blueprint = get_cursor_blueprint(player)
+      if not blueprint then
+        log.error(event.player_index, {"blueprint-align.msg_bad_cursor"})
+      end
+
       local rounding = butil.contains_rails(blueprint) and mutil.round2 or mutil.round
 
       if not blueprint.blueprint_absolute_snapping then
@@ -252,6 +208,20 @@ script.on_event(
       if align_relative then
         translate_blueprint(dx, dy, blueprint)
       else
+        dx, dy = mutil.rot(dx, dy, event.direction)
+        if event.flip_horizontal then
+          dx = -dx
+        end
+        if event.flip_vertical then
+          dy = -dy
+        end
+        local flip_xor = (
+          (event.flip_horizontal and not event.flip_vertical)
+          or (event.flip_vertical and not event.flip_horizontal))
+        if (event.direction == defines.direction.east or event.direction == defines.direction.west) and flip_xor then
+          dx, dy = -dx, -dy
+        end
+
         blueprint.blueprint_position_relative_to_grid = {
           x = blueprint.blueprint_position_relative_to_grid.x + dx,
           y = blueprint.blueprint_position_relative_to_grid.y + dy,
@@ -261,7 +231,7 @@ script.on_event(
       end
 
       aligning_blueprint = false
-      player.play_sound{ path = "utility/blueprint_selection_ended" }
+      player.play_sound{ path = mod_defines.sound.align_end }
       player.create_local_flying_text{
         text = {"blueprint-align.msg_finished"},
         create_at_cursor = true,
@@ -287,10 +257,22 @@ script.on_event(
       local w = selected_w
       local h = selected_h
 
-      if saved_blueprint then
+      if select_grid_blueprint and select_grid_blueprint.valid then
+        local blueprint = select_grid_blueprint
+
+        if select_grid_exported_blueprint then
+          player.cursor_stack.import_stack(select_grid_exported_blueprint)
+          blueprint = player.cursor_stack
+        else
+          player.cursor_stack.clear()
+        end
+
         local fudged = false
 
-        if saved_blueprint_attr.rails then
+        local x0, _, _, _ = butil.dimensions(blueprint)
+        local oddity = x0 % 2
+
+        if butil.contains_rails(blueprint) then
           if w % 2 ~= 0 then
             w = w + 1
             fudged = true
@@ -300,11 +282,11 @@ script.on_event(
             fudged = true
           end
 
-          if x_min % 2 ~= saved_blueprint_attr.oddity then
+          if x_min % 2 ~= oddity then
             x_min = x_min - 1
             fudged = true
           end
-          if y_min % 2 ~= saved_blueprint_attr.oddity then
+          if y_min % 2 ~= oddity then
             y_min = y_min - 1
             fudged = true
           end
@@ -313,15 +295,11 @@ script.on_event(
         x_min = x_min % w
         y_min = y_min % h
 
-        log.debug(event.player_index, "restoring cursor stack")
-        player.cursor_stack.import_stack(saved_blueprint)
-        local blueprint = player.cursor_stack
-
         blueprint.blueprint_snap_to_grid = { x = w, y = h }
         blueprint.blueprint_absolute_snapping = true
         blueprint.blueprint_position_relative_to_grid = { x = x_min, y = y_min }
-        saved_blueprint = nil
-        saved_blueprint_attr = nil
+        select_grid_blueprint = nil
+        select_grid_exported_blueprint = nil
 
         local center_x, center_y = butil.center(blueprint)
         translate_blueprint(((center_x + w) % w) - center_x, ((center_y + h) % h) - center_y, blueprint)
@@ -336,11 +314,10 @@ script.on_event(
           player.play_sound{ path = "utility/console_message" }
           player.create_local_flying_text{ text = {"blueprint-align.msg_grid_selection_finished_fudged_short"}, create_at_cursor = true }
         else
-          player.play_sound{ path = "utility/blueprint_selection_ended" }
+          player.play_sound{ path = mod_defines.sound.align_end }
           player.create_local_flying_text{ text = {"blueprint-align.msg_grid_selection_finished"}, create_at_cursor = true }
         end
       end
-
     end
   end
 )
@@ -352,7 +329,7 @@ script.on_event(
     log.debug(event.player_index, string.format("on custom_input : %s", sutil.dumps(event)))
 
     if aligning_blueprint then
-      local blueprint = player.cursor_stack
+      local blueprint = get_cursor_blueprint(player)
 
       log.debug(event.player_index,
                 string.format("Restoring original settings: offset %s",
@@ -370,7 +347,7 @@ script.on_event(
   function(event)
     local player = game.get_player(event.player_index)
 
-    if saved_blueprint
+    if (select_grid_blueprint or select_grid_exported_blueprint)
       and not (
         player.cursor_stack
         and player.cursor_stack.valid_for_read
@@ -383,11 +360,14 @@ script.on_event(
                               player.cursor_stack.valid,
                               player.cursor_stack.valid_for_read))
 
-      player.clear_cursor()
-      player.cursor_stack.import_stack(saved_blueprint)
-      player.clear_cursor()
+      if select_grid_exported_blueprint then
+        player.clear_cursor()
+        player.cursor_stack.import_stack(select_grid_exported_blueprint)
+        player.clear_cursor()
+      end
 
-      saved_blueprint = nil
+      select_grid_blueprint = nil
+      select_grid_exported_blueprint = nil
     end
 
     if aligning_blueprint then

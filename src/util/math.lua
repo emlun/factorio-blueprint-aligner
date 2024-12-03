@@ -27,5 +27,13 @@ function module.round2(x)
   return 2 * module.round(x / 2)
 end
 
+-- Rotate the given vector by the difference between the given direction and north.
+function module.rot(x, y, direction)
+  local theta = math.pi * direction / 8
+  local cos_theta = math.cos(theta)
+  local sin_theta = math.sin(theta)
+  return x * cos_theta - y * sin_theta, x * sin_theta + y * cos_theta
+end
+
 
 return module
